@@ -1,0 +1,31 @@
+# Blender MTL File: 'Überwachungskamera_szene.blend'
+# Material Count: 3
+
+newmtl None
+Ns 0
+Ka 0.000000 0.000000 0.000000
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8
+d 1
+illum 2
+
+newmtl cameratv
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.450000 0.450000 0.450000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Pospischil\Desktop\REORCCameraTV\camera_tv_d.dds
+map_Disp C:\\Users\\Pospischil\\Desktop\\REORCCameraTV\\camera_tv_n.dds
+map_Ka C:\\Users\\Pospischil\\Desktop\\REORCCameraTV\\camera_tv_d.dds
+
+newmtl wire_087224198
+Ns 29.411765
+Ka 0.000000 0.000000 0.000000
+Kd 0.272960 0.702720 0.621200
+Ks 0.350000 0.350000 0.350000
+Ni 1.000000
+d 1.000000
+illum 2

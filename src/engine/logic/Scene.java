@@ -76,7 +76,7 @@ public class Scene {
 		//holder.addModel(new Model(new Vec3(0,1,0),holder.getMesh(0), holder.getModelTexture(3), 1)); // monkey
 		holder.addModel(new Model(new Vec3(-2,0,1),holder.getMesh(1), holder.getModelTexture(0), 1)); // dragon
 
-		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(7), null, 1f,1f)); // complex house
+		//holder.addModel(new Model(new Vec3(0,0.2f,0),holder.getMesh(7), null, 1f,1f)); // complex house
 		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), null, 5)); // ground_plane
 
 		int value = 4;
@@ -87,9 +87,9 @@ public class Scene {
 			}
 		}
 
-		value = 5;
-		for(int x=-value ; x<=value ; x++) {
-			for (int z=-value; z<=value; z++) {
+		value = 1;
+		for(int x=-value ; x<value ; x++) {
+			for (int z=-value; z<value; z++) {
 				holder.addModel(new Model(new Vec3(x*5,1,z*5),holder.getMesh(0), holder.getModelTexture(3),1)); // monkey
 			}
 		}
@@ -106,7 +106,7 @@ public class Scene {
 		}
 */
 		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(1f,1f,1f),1,0.01f,5,0));
-		holder.addLight(new PointLight(new Vec3(4,5,3), new Vec3(1f,1f,1f),15f,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(0,3,-2), new Vec3(1f,0f,0f),5,0.01f,5,180));
     }
 
 	public Camera getMainCamera() {

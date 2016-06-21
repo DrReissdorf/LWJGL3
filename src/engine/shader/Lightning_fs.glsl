@@ -112,13 +112,21 @@ void main(void) {
         vec3 ambient = 0.15 * color.rgb;
 
         vec3 diffuseFinal = vec3(0);
-
-        vec3 sunpos = uSunDirection+position.xyz;
-        diffuseFinal += calculateDiffuse(uSunColor,dot(normalize(normal.xyz),normalize(sunpos-position.xyz)));
-
-
         vec3 specularFinal = vec3(0);
-     /*   float nDotl;
+
+        /* SUN DIRECTIONAL LIGHT */
+        vec3 sun_diffuse = vec3(0);
+        vec3 sun_specular = vec3(0);
+        vec3 sun_pos = uSunDirection+position.xyz;
+        vec3 sun_N = normalize(normal.xyz);
+        vec3 sun_L = normalize(sun_pos-position.xyz);
+        vec3 sun_V = normalize(cameraPos - position.xyz);
+        float sun_nDotl = dot(sun_N, sun_L);
+        sun_diffuse += calculateDiffuse(uSunColor,sun_nDotl);
+        sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSunColor, sun_nDotl, specValues.g,specValues.r);
+        /*************************/
+
+        float nDotl;
         float attenuation;
         vec3 L;
         for(int i=0 ; i<LIGHTS ; i++) {
@@ -135,7 +143,7 @@ void main(void) {
                 diffuseFinal += calculateDiffuse(uLightColorArray[i],nDotl) * attenuation;
                 specularFinal += calculateSpecularBlinn(N, V, L, uLightColorArray[i], nDotl, specValues.g,specValues.r) * attenuation;
             }
-        } */
+        }
 
         //float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
         //float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
@@ -146,7 +154,7 @@ void main(void) {
         vec4 shadowCoords = uSunProjection * uSunView * vec4(position.xyz,1.0);
         float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE);
             //shadowFactor = 1;
-       // FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
-        FragColor = vec4((ambient+shadowFactor * (diffuseFinal)) * color.rgb, 1.0);
+        //FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
+          FragColor = vec4((ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal * color.rgb, 1.0);
     }
 }

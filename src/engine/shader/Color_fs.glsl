@@ -2,7 +2,7 @@
 
 #define LIGHTS 2
 
-#define AMBILIGHT 0.2
+#define AMBILIGHT 0.15
 #define BLINN_ADD_SHINE 100
 #define SHADOW_BIAS 0.001
 #define PCF_SAMPLES 1

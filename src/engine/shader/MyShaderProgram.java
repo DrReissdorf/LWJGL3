@@ -23,9 +23,8 @@ public class MyShaderProgram {
     private HashMap<String, Integer> m_UniformLocations;
     private int                      m_Program;
 
-    public MyShaderProgram(String vertexFile, String fragmentFile)
-    {
-        m_UniformLocations = new HashMap<String, Integer>();
+    public MyShaderProgram(String vertexFile, String fragmentFile) {
+        m_UniformLocations = new HashMap<>();
 
         String vertexSource   = FileIO.readTXT(vertexFile);
         String fragmentSource = FileIO.readTXT( fragmentFile );
@@ -34,8 +33,7 @@ public class MyShaderProgram {
     }
 
 
-    private void createProgram( String vertexSource, String fragmentSource )
-    {
+    private void createProgram( String vertexSource, String fragmentSource ) {
         m_Program = glCreateProgram();
 
         int vertexShader   = this.createShader( vertexSource, GL_VERTEX_SHADER );
@@ -62,8 +60,7 @@ public class MyShaderProgram {
     }
 
 
-    private int createShader( String shaderSource, int type )
-    {
+    private int createShader( String shaderSource, int type ) {
         int shader = glCreateShader( type );
 
         glShaderSource( shader, shaderSource );
@@ -77,9 +74,7 @@ public class MyShaderProgram {
         return shader;
     }
 
-
-    private int getUniformLocation( String uniformName )
-    {
+    private int getUniformLocation( String uniformName ) {
         Integer cachedLocation = m_UniformLocations.get( uniformName );
 
         if( cachedLocation == null )
@@ -93,9 +88,7 @@ public class MyShaderProgram {
         return cachedLocation;
     }
 
-
-    private static void printLog( int obj )
-    {
+    private static void printLog( int obj ) {
         IntBuffer iVal = BufferUtils.createIntBuffer( 1 );
         glGetShaderiv( obj, GL_INFO_LOG_LENGTH, iVal );
 
@@ -115,7 +108,6 @@ public class MyShaderProgram {
             System.out.println( "Shader log:\n" + out );
         }
     }
-
 
     public void useProgram()
     {
@@ -147,25 +139,21 @@ public class MyShaderProgram {
     }
 
 
-    public void setUniform( String uniformName, Vec4 vec )
-    {
+    public void setUniform( String uniformName, Vec4 vec ) {
         glUniform4f( this.getUniformLocation(uniformName), vec.x, vec.y, vec.z, vec.w );
     }
 
 
-    public void setUniform( String uniformName, Mat3 mat )
-    {
+    public void setUniform( String uniformName, Mat3 mat ) {
         glUniformMatrix3fv( this.getUniformLocation(uniformName), false, mat.toFloatBuffer() );
     }
 
 
-    public void setUniform( String uniformName, Mat4 mat )
-    {
+    public void setUniform( String uniformName, Mat4 mat ) {
         glUniformMatrix4fv( this.getUniformLocation(uniformName), false, mat.toFloatBuffer() );
     }
 
-    public void setUniform( String uniformName, Texture texture )
-    {
+    public void setUniform( String uniformName, Texture texture ) {
         int textureSlot = GL_TEXTURE0 + activeTexture;
         int textureID   = texture.getID();
 
@@ -176,19 +164,7 @@ public class MyShaderProgram {
         activeTexture = (activeTexture + 1) % maxActiveTextures;
     }
 
-    public void setUniformShadowTexture( String uniformName, int textureID )
-    {
-        int textureSlot = GL_TEXTURE0 + activeTexture;
-
-        glActiveTexture( textureSlot );
-        glBindTexture( GL_TEXTURE_2D, textureID );
-        glUniform1i( this.getUniformLocation(uniformName), activeTexture );
-
-        activeTexture = (activeTexture + 1) % maxActiveTextures;
-    }
-
     public void setUniform( String uniformName, Vec3[] vecArray ) {
-        FloatBuffer fb = BufferUtils.createFloatBuffer(vecArray.length*3);
         float[] temp = new float[vecArray.length*3];
 
         for(int i=0 ; i<vecArray.length ; i++) {
@@ -197,13 +173,10 @@ public class MyShaderProgram {
             temp[i*3+2] = vecArray[i].z;
         }
 
-        fb.put(temp);
-        fb.flip();
-        glUniform3fv(this.getUniformLocation(uniformName), fb);
+        glUniform3fv(this.getUniformLocation(uniformName), temp);
     }
 
     public void setUniform( String uniformName, Vec4[] vecArray ) {
-        FloatBuffer fb = BufferUtils.createFloatBuffer(vecArray.length*4);
         float[] temp = new float[vecArray.length*4];
 
         for(int i=0 ; i<vecArray.length ; i++) {
@@ -213,13 +186,10 @@ public class MyShaderProgram {
             temp[i*3+3] = vecArray[i].w;
         }
 
-        fb.put(temp);
-        fb.flip();
-        glUniform4fv(this.getUniformLocation(uniformName), fb);
+        glUniform4fv(this.getUniformLocation(uniformName), temp);
     }
 
     public void setUniform( String uniformName, Mat4[] matArray ) {
-        FloatBuffer fb = BufferUtils.createFloatBuffer(matArray.length*16);
         float[] temp = new float[matArray.length*16];
 
         for(int i=0 ; i<matArray.length ; i++) {
@@ -244,15 +214,30 @@ public class MyShaderProgram {
             temp[i*16+15] = matArray[i].m33;
         }
 
-        fb.put(temp);
-        fb.flip();
-        glUniformMatrix4fv(this.getUniformLocation(uniformName), false, fb);
+        glUniformMatrix4fv(this.getUniformLocation(uniformName), false, temp);
     }
 
-    public void setUniform( String uniformName, float[] floats ) {
-        FloatBuffer fb = BufferUtils.createFloatBuffer(floats.length);
-        fb.put(floats);
-        fb.flip();
-        glUniform1fv( this.getUniformLocation(uniformName), fb);
+    public void setUniform( String uniformName, Mat3[] matArray ) {
+        float[] temp = new float[matArray.length*9];
+
+        for(int i=0 ; i<matArray.length ; i++) {
+            temp[i*9] = matArray[i].m00;
+            temp[i*9+1] = matArray[i].m10;
+            temp[i*9+2] = matArray[i].m20;
+
+            temp[i*9+3] = matArray[i].m01;
+            temp[i*9+4] = matArray[i].m11;
+            temp[i*9+5] = matArray[i].m21;
+
+            temp[i*9+6] = matArray[i].m02;
+            temp[i*9+7] = matArray[i].m12;
+            temp[i*9+8] = matArray[i].m22;
+        }
+
+        glUniformMatrix3fv(this.getUniformLocation(uniformName), false, temp);
+    }
+
+    public void setUniform(String uniformName, float[] floats) {
+        glUniform1fv( this.getUniformLocation(uniformName), floats);
     }
 }

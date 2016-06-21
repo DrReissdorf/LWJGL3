@@ -44,8 +44,7 @@ public class Game {
         GLFWErrorCallback.createPrint(System.err).set();
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if ( !glfwInit() )
-            throw new IllegalStateException("Unable to initialize GLFW");
+        if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 
         // Configure our window
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -91,7 +90,7 @@ public class Game {
 
         GL.createCapabilities();
 
-        scene = new Scene(window,WIDTH,HEIGHT);
+        scene = new Scene(WIDTH,HEIGHT);
         inputHandler = new InputHandler(window,scene);
 
         float   deltaTime;

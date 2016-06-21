@@ -25,12 +25,15 @@ public class InputHandler {
         this.scene = scene;
         this.window = window;
         mainCamera = scene.getMainCamera();
+
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     public void updateInput(float deltaTime) {
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
             if(!is_L_pressed) {
                 is_L_pressed = true;
+                scene.setLightMoving(!scene.isLightMoving());
             }
         }
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE) {
@@ -43,6 +46,11 @@ public class InputHandler {
             if(!is_COMMA_pressed) {
                 is_COMMA_pressed = true;
                 mainCamera.setFreeFlight(!mainCamera.isFreeFlight());
+            }
+        }
+        if(glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_RELEASE) {
+            if(is_COMMA_pressed) {
+                is_COMMA_pressed = false;
             }
         }
 

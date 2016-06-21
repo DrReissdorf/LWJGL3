@@ -16,11 +16,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Scene {
 	private HolderSingleton holder;
-	private boolean isPressed = false;
-	private long window;
 
-
-	private Renderer renderer;
 	private NewRenderer newRenderer;
 	private Camera mainCamera;
 
@@ -29,12 +25,9 @@ public class Scene {
 	float mainCameraFar    = 500.0f;
 
 
-
 	private boolean isLightMoving = false;
 
-	public Scene(long window, int width, int height)	{
-		this.window = window;
-		renderer = new Renderer(width,height);
+	public Scene(int width, int height)	{
 		newRenderer = new NewRenderer(width,height);
 
 		holder = HolderSingleton.getInstance();
@@ -46,8 +39,6 @@ public class Scene {
 		createTextures();
 		createModelTextures();
         createModels();
-
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 	public void draw() {
@@ -73,14 +64,14 @@ public class Scene {
 	}
 
 	private void createModelTextures() {
-		holder.addModelTexture(new ModelTexture(holder.getTexture(0), 0.5f, 32));	// dragon
-		holder.addModelTexture(new ModelTexture(holder.getTexture(1), 0.1f, 32));	// woodplanks
+		holder.addModelTexture(new ModelTexture(holder.getTexture(0), 0.3f, 20));	// dragon
+		holder.addModelTexture(new ModelTexture(holder.getTexture(1), 0f, 0f));	// woodplanks
 		holder.addModelTexture(new ModelTexture(holder.getTexture(2), 0.5f, 32));	// rock
 		holder.addModelTexture(new ModelTexture(holder.getTexture(3), 0.5f, 32));	// stone
 	}
 
 	private void createModels() {
-		holder.addModel(new Model(new Vec3(0,1,0),holder.getMesh(6), null, 1)); // cube
+		holder.addModel(new Model(new Vec3(2,0.5f,0),holder.getMesh(6), null, 1)); // cube
 		//holder.addModel(new Model(new Vec3(0,1,0),holder.getMesh(0), holder.getModelTexture(3), 1)); // monkey
 		holder.addModel(new Model(new Vec3(-2,0,1),holder.getMesh(1), holder.getModelTexture(0), 1)); // dragon
 		holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), holder.getModelTexture(1), 5)); // ground_plane
@@ -105,11 +96,19 @@ public class Scene {
 			}
 		}
 */
-		holder.addLight(new Light(new Vec3(-5,4,3), new Vec3(1f,1f,1f),15f,0.01f,5,0));
-		holder.addLight(new Light(new Vec3(5,4,3), new Vec3(1f,1f,1f),15f,0.01f,5,180));
+		holder.addLight(new Light(new Vec3(-4,5,3), new Vec3(1f,1f,1f),100f,0.01f,5,0));
+		holder.addLight(new Light(new Vec3(4,5,3), new Vec3(1f,1f,1f),15f,0.01f,5,180));
     }
 
 	public Camera getMainCamera() {
 		return mainCamera;
+	}
+
+	public void setLightMoving(boolean lightMoving) {
+		isLightMoving = lightMoving;
+	}
+
+	public boolean isLightMoving() {
+		return isLightMoving;
 	}
 }

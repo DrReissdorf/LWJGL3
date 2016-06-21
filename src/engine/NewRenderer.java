@@ -32,11 +32,11 @@ public class NewRenderer {
 
     private HolderSingleton holder;
 
-    private ArrayList<Vec3> lightPositions;
-    private ArrayList<Vec3> lightColors;
-    private ArrayList<Float> lightRanges;
-    private ArrayList<Mat4> lightProjections;
-    private ArrayList<Mat4> lightViews;
+    private Vec3[] lightPositionArray;
+    private Vec3[] lightColorArray;
+    private float[] lightRangeArray;
+    private Mat4[] lightProjectionArray;
+    private Mat4[] lightViewArray;
 
     private int shadowFrameBuffer;
     private int shadowTextureID;
@@ -48,7 +48,7 @@ public class NewRenderer {
     private Mesh postProcessQuad;
 
     private Mesh lightningQuad;
-    private Texture gBufferPositionTex, gBufferNormalReflectTex, gBufferColorSpecTex;
+    private Texture gBufferPositionTex, gBufferNormalReflectTex, gBufferColorSpecTex, gBufferSpecTex;
     private int gBufferID;
 
     private int windowWidth, windowHeight;
@@ -76,59 +76,64 @@ public class NewRenderer {
         glEnable(GL_CULL_FACE);
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-
-        lightPositions = new ArrayList<>();
-        lightColors = new ArrayList<>();
-        lightRanges = new ArrayList<>();
-        lightProjections = new ArrayList<>();
-        lightViews = new ArrayList<>();
     }
 
     public void renderScene(Camera mainCamera) {
-        updateArrayLists();
         renderGeometry(mainCamera);
         renderShadowMap();
-        renderLightning(mainCamera);
+        renderLightning(mainCamera, holder.getLights());
         postProcess();
     }
 
     public void renderGeometry(Camera mainCamera) {
         glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         glCullFace(GL_BACK);
 
         geometryShader.useProgram();
-        geometryShader.setUniform("uView",       mainCamera.getViewMatrix() );
-        geometryShader.setUniform("uProjection", mainCamera.getProjectionMatrix() );
+        geometryShader.setUniform("uView",       mainCamera.getViewMatrix());
+        geometryShader.setUniform("uProjection", mainCamera.getProjectionMatrix());
 
         for(Model model : holder.getModels()) {
-            geometryShader.setUniform("uModel", model.getTranformationMatrix());
+            geometryShader.setUniform("uModel",     model.getTranformationMatrix());
             geometryShader.setUniform("uNormalMat", createNormalMat(model.getTranformationMatrix()));
 
             if(model.getModelTexture() != null) {
                 geometryShader.setUniform("uHasTexture", 1.0f);
-                geometryShader.setUniform("uTexture", model.getModelTexture().getTexture());
-                geometryShader.setUniform("uShininess", model.getModelTexture().getShininess());
-                geometryShader.setUniform("uReflectivity", model.getModelTexture().getReflectivity());
-                geometryShader.setUniform("uTextureScale", model.getTextureScale());
+                geometryShader.setUniform("uTexture",       model.getModelTexture().getTexture());
+                geometryShader.setUniform("uShininess",     model.getModelTexture().getShininess());
+                geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
+                geometryShader.setUniform("uTextureScale",  model.getTextureScale());
             } else {
                 geometryShader.setUniform("uHasTexture", 0.0f);
-                geometryShader.setUniform("uShininess", 100);
-                geometryShader.setUniform("uReflectivity", 1);
+                geometryShader.setUniform("uShininess", 100.0f);
+                geometryShader.setUniform("uReflectivity", 1.0f);
             }
 
             model.getMesh().draw(GL_TRIANGLES);
         }
     }
 
-    public void renderLightning(Camera mainCamera) {
+    public void renderLightning(Camera mainCamera, ArrayList<Light> lights) {
         glBindFramebuffer(GL_FRAMEBUFFER, postProcessFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f,0.0f,0.0f,1f);
+        //glClearColor(0.0f,0.0f,0.0f,1f);
         //glClearColor(backgroundColor.x,backgroundColor.y,backgroundColor.z,1f);
         glViewport(0, 0, windowWidth, windowHeight);
-        glCullFace(GL_BACK);
+
+        lightPositionArray = new Vec3[lights.size()];
+        lightColorArray = new Vec3[lights.size()];
+        lightRangeArray = new float[lights.size()];
+        lightViewArray = new Mat4[lights.size()];
+        lightProjectionArray = new Mat4[lights.size()];
+
+        for(int i=0 ; i<lights.size() ; i++) {
+            lightPositionArray[i] = lights.get(i).getPosition();
+            lightColorArray[i] = lights.get(i).getColor();
+            lightRangeArray[i] = lights.get(i).getRange();
+            lightViewArray[i] = lights.get(i).getViewMatrix();
+            lightProjectionArray[i] = lights.get(i).getProjectionMatrix();
+        }
 
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
@@ -137,12 +142,13 @@ public class NewRenderer {
         lightningShader.setUniform("uPositionTex", gBufferPositionTex);
         lightningShader.setUniform("uNormalTex", gBufferNormalReflectTex);
         lightningShader.setUniform("uColorSpecTex", gBufferColorSpecTex);
+        lightningShader.setUniform("uSpecTex", gBufferSpecTex);
 
-        lightningShader.setUniform("uLightProjections", convertMat4ArrayListToMat4Array(lightProjections));
-        lightningShader.setUniform("uLightViews",       convertMat4ArrayListToMat4Array(lightViews) );
-        lightningShader.setUniform("uLightPosArray",    convertVec3ArrayListToVec3Array(lightPositions));
-        lightningShader.setUniform("uLightColorArray",  convertVec3ArrayListToVec3Array(lightColors));
-        lightningShader.setUniform("uLightRangesArray", convertFloatArrayListToFloatArray(lightRanges));
+        lightningShader.setUniform("uLightProjections", lightProjectionArray);
+        lightningShader.setUniform("uLightViews",       lightViewArray);
+        lightningShader.setUniform("uLightPosArray",    lightPositionArray);
+        lightningShader.setUniform("uLightColorArray",  lightColorArray);
+        lightningShader.setUniform("uLightRangesArray", lightRangeArray);
 
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 
@@ -160,7 +166,7 @@ public class NewRenderer {
         glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        glCullFace(GL_BACK);
+        glCullFace(GL_FRONT);
         shadowShader.useProgram();
 
         Light light = holder.getLight(0);
@@ -171,13 +177,13 @@ public class NewRenderer {
             shadowShader.setUniform("uModel", model.getTranformationMatrix());
             model.getMesh().draw(GL_TRIANGLES);
         }
+        glCullFace(GL_BACK);
     }
 
     public void postProcess() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
-        glCullFace(GL_BACK);
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);
@@ -190,7 +196,7 @@ public class NewRenderer {
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferColorSpecTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferNormalReflectTex.getID() );
@@ -198,6 +204,10 @@ public class NewRenderer {
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferPositionTex.getID() );
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        glBindTexture( GL_TEXTURE_2D, gBufferSpecTex.getID() );
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
@@ -211,6 +221,7 @@ public class NewRenderer {
 
     public void initShadows() {
         shadowTextureID = FrameBufferTextureFactory.setupShadowMapTextureBuffer(holder.getShadowMapSize(), holder.getShadowMapSize());
+        //shadowTextureID = FrameBufferTextureFactory.newShadowTex(holder.getShadowMapSize(), holder.getShadowMapSize());
         shadowMapTexture = new Texture(shadowTextureID);
         shadowFrameBuffer = FrameBufferFactory.setupShadowFrameBuffer(shadowTextureID);
     }
@@ -228,8 +239,9 @@ public class NewRenderer {
         gBufferColorSpecTex = new Texture(gBufferTextureIDs[0]);
         gBufferNormalReflectTex = new Texture(gBufferTextureIDs[1]);
         gBufferPositionTex = new Texture(gBufferTextureIDs[2]);
+        gBufferSpecTex = new Texture(gBufferTextureIDs[3]);
 
-        gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex);
+        gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex, gBufferSpecTex);
     }
 
     public Vec3 RgbToFloat(int r, int g, int b) {
@@ -262,7 +274,7 @@ public class NewRenderer {
         return lightIndices;
     }
 
-    private void updateArrayLists() {
+   /* private void updateArrayLists() {
         lightPositions.clear();
         lightColors.clear();
         lightRanges.clear();
@@ -276,7 +288,7 @@ public class NewRenderer {
             lightViews.add(light.getViewMatrix());
             lightProjections.add(light.getProjectionMatrix());
         }
-    }
+    } */
 
     private Mat4[] convertMat4ArrayListToMat4Array(ArrayList<Mat4> mats) {
         Mat4[] matArray = new Mat4[mats.size()];

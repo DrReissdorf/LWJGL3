@@ -25,6 +25,4 @@ public class ModelTexture {
     public float getShininess() {
         return shininess;
     }
-
-
 }

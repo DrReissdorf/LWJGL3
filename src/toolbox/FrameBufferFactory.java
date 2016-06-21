@@ -11,13 +11,14 @@ import static org.lwjgl.opengl.GL20.glDrawBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
 public class FrameBufferFactory {
-    public static int setup_Gbuffer(int width, int height, Texture colorSpecTex, Texture normalTex, Texture positionTex ) {
+    public static int setup_Gbuffer(int width, int height, Texture colorSpecTex, Texture normalTex, Texture positionTex, Texture specTex ) {
         int gBufferID = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
 
         int attachment1 = GL_COLOR_ATTACHMENT0;
         int attachment2 = GL_COLOR_ATTACHMENT1;
         int attachment3 = GL_COLOR_ATTACHMENT2;
+        int attachment4 = GL_COLOR_ATTACHMENT3;
 
         // - Position color buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment1, GL_TEXTURE_2D, colorSpecTex.getID(), 0);
@@ -25,10 +26,13 @@ public class FrameBufferFactory {
         // - Normal color buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment2, GL_TEXTURE_2D, normalTex.getID(), 0);
 
-        // - Color + Specular color buffer
+        // - Color
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment3, GL_TEXTURE_2D, positionTex.getID(), 0);
 
-        int[] attachments = { attachment1, attachment2, attachment3 };
+        // specvalues
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment4, GL_TEXTURE_2D, specTex.getID(), 0);
+
+        int[] attachments = { attachment1, attachment2, attachment3, attachment4 };
         IntBuffer attribData = BufferUtils.createIntBuffer( attachments.length );
         attribData.put( attachments, 0, attachments.length );
         attribData.flip();

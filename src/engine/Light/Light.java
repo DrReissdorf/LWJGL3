@@ -1,12 +1,13 @@
-package engine;
+package engine.Light;
 
+import engine.GameObject;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
 
-public class Light extends Entity {
-    private Mat4 projectionMatrix;
+public class Light extends GameObject {
     private Mat4 viewMatrix;
+    private Mat4 projectionMatrix;
 
     private Vec3 color;
     private float range;
@@ -26,7 +27,6 @@ public class Light extends Entity {
         this.color = color;
         this.range = range;
         projectionMatrix = Mat4.perspective(fov, holder.getShadowMapSize(), holder.getShadowMapSize(), 0.1f, range);
-        //projectionMatrix = Mat4.orthographic(10,-10,10,-10,0,20);
         viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
     }
 
@@ -37,8 +37,6 @@ public class Light extends Entity {
         this.range = range;
         this.circleMoveSpeed = circleMoveSpeed;
         this.distanceToOrigin = distanceToOrigin;
-        //projectionMatrix = Mat4.perspective(fov, holder.getShadowMapSize(), holder.getShadowMapSize(), 0.1f, 100);
-        projectionMatrix = Mat4.orthographic(10,-10,10,-10,0,20);
         viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
         this.circleMoveAngle = circleMoveAngle;
     }
@@ -74,15 +72,15 @@ public class Light extends Entity {
         viewMatrix = Mat4.lookAt(getPosition(), new Vec3(), new Vec3(0, 1, 0));
     }
 
-    private void updateProjectionMatrix(int shadowMapSize) {
-        projectionMatrix = Mat4.perspective(fov, HolderSingleton.getInstance().getShadowMapSize(), HolderSingleton.getInstance().getShadowMapSize(), 0.1f, range);
+    public Mat4 getViewMatrix() {
+        return viewMatrix;
     }
 
     public Mat4 getProjectionMatrix() {
         return projectionMatrix;
     }
 
-    public Mat4 getViewMatrix() {
-        return viewMatrix;
+    public void setProjectionMatrix(Mat4 projectionMatrix) {
+        this.projectionMatrix = projectionMatrix;
     }
 }

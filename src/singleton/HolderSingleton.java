@@ -1,6 +1,8 @@
 package singleton;
 
 import engine.*;
+import engine.Light.Light;
+import engine.Light.Sun;
 import util.Mesh;
 import util.Texture;
 
@@ -11,11 +13,12 @@ public class HolderSingleton {
 
     private static HolderSingleton holderSingleton;
     private ArrayList<Light> lights;
-    private ArrayList<Entity> entities;
+    private ArrayList<GameObject> entities;
     private ArrayList<Mesh> meshes;
     private ArrayList<Model> models;
     private ArrayList<ModelTexture> modelTextures;
     private ArrayList<Texture> textures;
+    private Sun sun;
 
     private HolderSingleton() {
         lights = new ArrayList<>();
@@ -31,11 +34,11 @@ public class HolderSingleton {
         return holderSingleton;
     }
 
-    public void addEntity(Entity entity) {
+    public void addEntity(GameObject entity) {
         entities.add(entity);
     }
 
-    public Entity getEntity(int position) {
+    public GameObject getEntity(int position) {
         return entities.get(position);
     }
 
@@ -71,7 +74,7 @@ public class HolderSingleton {
         return textures.get(position);
     }
 
-    public ArrayList<Entity> getEntityArrayList() {
+    public ArrayList<GameObject> getEntityArrayList() {
         return entities;
     }
 
@@ -91,7 +94,7 @@ public class HolderSingleton {
         return lights.get(position);
     }
 
-    public ArrayList<Entity> getEntities() {
+    public ArrayList<GameObject> getEntities() {
         return entities;
     }
 
@@ -113,5 +116,13 @@ public class HolderSingleton {
 
     public ArrayList<Light> getLights() {
         return lights;
+    }
+
+    public void setSun(Sun sun) {
+        this.sun = sun;
+    }
+
+    public Sun getSun() {
+        return sun;
     }
 }

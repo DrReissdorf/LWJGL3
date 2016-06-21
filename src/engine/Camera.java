@@ -3,7 +3,7 @@ package engine;
 import math.Mat4;
 import math.Vec3;
 
-public class Camera extends Entity {
+public class Camera extends GameObject {
     private Mat4 projectionMatrix;
     private long lastTime;
     private boolean isFreeFlight = true;

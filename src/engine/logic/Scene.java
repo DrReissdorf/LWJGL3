@@ -1,24 +1,19 @@
 package engine.logic;
 
 import engine.*;
+import engine.Light.Sun;
+import engine.Light.Light;
+import engine.Light.PointLight;
 import math.Vec3;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import singleton.HolderSingleton;
 import toolbox.ObjLoader;
 import util.Texture;
-
-import java.nio.DoubleBuffer;
-
-import static org.lwjgl.glfw.GLFW.*;
 
 public class Scene {
 	private HolderSingleton holder;
 	private long window;
 
-	private NewRenderer newRenderer;
+	private Renderer newRenderer;
 	private Camera mainCamera;
 
 	float mainCameraFov = 70.0f;
@@ -30,7 +25,7 @@ public class Scene {
 
 	public Scene(long window, int width, int height)	{
 		this.window = window;
-		newRenderer = new NewRenderer(width,height);
+		newRenderer = new Renderer(width,height);
 
 		holder = HolderSingleton.getInstance();
 
@@ -80,18 +75,25 @@ public class Scene {
 		holder.addModel(new Model(new Vec3(2,0.5f,0),holder.getMesh(6), null, 1)); // cube
 		//holder.addModel(new Model(new Vec3(0,1,0),holder.getMesh(0), holder.getModelTexture(3), 1)); // monkey
 		holder.addModel(new Model(new Vec3(-2,0,1),holder.getMesh(1), holder.getModelTexture(0), 1)); // dragon
-		holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), holder.getModelTexture(1), 5)); // ground_plane
+
 		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(7), null, 1f,1f)); // complex house
 		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), null, 5)); // ground_plane
 
-
-		/*
-		for(int x=-2 ; x<=2 ; x++) {
-			for (int z=-2; z<=2; z++) {
-				holder.addModel(new Model(new Vec3(x*3,1,z*3),holder.getMesh(0), holder.getModelTexture(3),1)); // monkey
+		int value = 4;
+		for(int x=-value ; x<=value ; x++) {
+			for (int z=-value; z<=value; z++) {
+				int multi = 15;
+				holder.addModel(new Model(new Vec3(x*multi,0,z*multi),holder.getMesh(4), holder.getModelTexture(1), 20, 1)); // ground_plane
 			}
 		}
-		*/
+
+		value = 5;
+		for(int x=-value ; x<=value ; x++) {
+			for (int z=-value; z<=value; z++) {
+				holder.addModel(new Model(new Vec3(x*5,1,z*5),holder.getMesh(0), holder.getModelTexture(3),1)); // monkey
+			}
+		}
+
 
 	}
 
@@ -103,8 +105,8 @@ public class Scene {
 			}
 		}
 */
-		holder.addLight(new Light(new Vec3(-4,5,3), new Vec3(1f,1f,1f),100f,0.01f,5,0));
-		holder.addLight(new Light(new Vec3(4,5,3), new Vec3(1f,1f,1f),15f,0.01f,5,180));
+		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(1f,1f,1f),1,0.01f,5,0));
+		holder.addLight(new PointLight(new Vec3(4,5,3), new Vec3(1f,1f,1f),15f,0.01f,5,180));
     }
 
 	public Camera getMainCamera() {

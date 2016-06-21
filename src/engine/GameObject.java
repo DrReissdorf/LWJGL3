@@ -8,13 +8,13 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static math.MathUtil.PI;
 
-public class Entity {
+public class GameObject {
     private Mat4 tranformationMatrix;
     private float scale;
     private Vec3 position, direction, right, forward, up;
     private float rotX=0, rotY=0, rotZ=0;
 
-    public Entity(Vec3 position) {
+    public GameObject(Vec3 position) {
         this.position = position;
         this.scale = 1;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
@@ -23,7 +23,7 @@ public class Entity {
         updateVectors();
     }
 
-    public Entity(Vec3 position, float scale) {
+    public GameObject(Vec3 position, float scale) {
         this.position = position;
         this.scale = scale;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);

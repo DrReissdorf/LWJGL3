@@ -4,7 +4,7 @@ package engine;
 import math.Vec3;
 import util.Mesh;
 
-public class Model extends Entity {
+public class Model extends GameObject {
     private Mesh mesh;
     private ModelTexture modelTexture;
     private float textureScale;

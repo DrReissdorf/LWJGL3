@@ -1,5 +1,7 @@
 package engine;
 
+import engine.Light.Light;
+import engine.Light.Sun;
 import engine.shader.MyShaderProgram;
 import singleton.HolderSingleton;
 import math.Mat4;
@@ -18,9 +20,10 @@ import java.util.ArrayList;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
 
-public class NewRenderer {
+public class Renderer {
     private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
     private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
+    private final float renderDistance = 50;
 
     private final String shaderLocation = "src/engine/shader/";
 
@@ -54,7 +57,7 @@ public class NewRenderer {
     private int windowWidth, windowHeight;
     private final Vec3 backgroundColor = RgbToFloat(54,155,255);
 
-    public NewRenderer(int windowWidth, int windowHeight) {
+    public Renderer(int windowWidth, int windowHeight) {
         this.windowHeight = windowHeight;
         this.windowWidth = windowWidth;
 
@@ -80,7 +83,7 @@ public class NewRenderer {
 
     public void renderScene(Camera mainCamera) {
         renderGeometry(mainCamera);
-        renderShadowMap();
+        renderShadowMap(mainCamera);
         renderLightning(mainCamera, holder.getLights());
         postProcess();
     }
@@ -95,22 +98,26 @@ public class NewRenderer {
         geometryShader.setUniform("uProjection", mainCamera.getProjectionMatrix());
 
         for(Model model : holder.getModels()) {
-            geometryShader.setUniform("uModel",     model.getTranformationMatrix());
-            geometryShader.setUniform("uNormalMat", createNormalMat(model.getTranformationMatrix()));
 
-            if(model.getModelTexture() != null) {
-                geometryShader.setUniform("uHasTexture", 1.0f);
-                geometryShader.setUniform("uTexture",       model.getModelTexture().getTexture());
-                geometryShader.setUniform("uShininess",     model.getModelTexture().getShininess());
-                geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
-                geometryShader.setUniform("uTextureScale",  model.getTextureScale());
-            } else {
-                geometryShader.setUniform("uHasTexture", 0.0f);
-                geometryShader.setUniform("uShininess", 100.0f);
-                geometryShader.setUniform("uReflectivity", 1.0f);
+            if(Vec3.length(Vec3.sub(model.getPosition(),mainCamera.getPosition())) < renderDistance) {
+                geometryShader.setUniform("uModel",     model.getTranformationMatrix());
+                geometryShader.setUniform("uNormalMat", createNormalMat(model.getTranformationMatrix()));
+
+                if(model.getModelTexture() != null) {
+                    geometryShader.setUniform("uHasTexture", 1.0f);
+                    geometryShader.setUniform("uTexture",       model.getModelTexture().getTexture());
+                    geometryShader.setUniform("uShininess",     model.getModelTexture().getShininess());
+                    geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
+                    geometryShader.setUniform("uTextureScale",  model.getTextureScale());
+                } else {
+                    geometryShader.setUniform("uHasTexture", 0.0f);
+                    geometryShader.setUniform("uShininess", 100.0f);
+                    geometryShader.setUniform("uReflectivity", 1.0f);
+                }
+
+                model.getMesh().draw(GL_TRIANGLES);
             }
 
-            model.getMesh().draw(GL_TRIANGLES);
         }
     }
 
@@ -135,6 +142,8 @@ public class NewRenderer {
             lightProjectionArray[i] = lights.get(i).getProjectionMatrix();
         }
 
+        Sun sun = holder.getSun();
+
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
         lightningShader.setUniform("cameraPos", mainCamera.getPosition());
@@ -150,6 +159,11 @@ public class NewRenderer {
         lightningShader.setUniform("uLightColorArray",  lightColorArray);
         lightningShader.setUniform("uLightRangesArray", lightRangeArray);
 
+        lightningShader.setUniform("uSunProjection", sun.getProjectionMatrix());
+        lightningShader.setUniform("uSunView", sun.getViewMatrix());
+        lightningShader.setUniform("uSunDirection", sun.getPosition());
+        lightningShader.setUniform("uSunColor", sun.getColor());
+
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 
         lightningQuad.draw();
@@ -161,22 +175,27 @@ public class NewRenderer {
         return Mat4.inverse(modelMatrix).transpose();
     }
 
-    private void renderShadowMap()  {
+    private void renderShadowMap(Camera mainCamera)  {
         glViewport(0, 0, holder.getShadowMapSize(), holder.getShadowMapSize());
         glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
         glCullFace(GL_FRONT);
+
         shadowShader.useProgram();
 
-        Light light = holder.getLight(0);
-        shadowShader.setUniform("uView", light.getViewMatrix());
-        shadowShader.setUniform("uProjection", light.getProjectionMatrix());
+        Sun sun = holder.getSun();
+
+        shadowShader.setUniform("uProjection", sun.getProjectionMatrix());
+        shadowShader.setUniform("uView", sun.getViewMatrix());
 
         for (Model model : holder.getModels()) {
-            shadowShader.setUniform("uModel", model.getTranformationMatrix());
-            model.getMesh().draw(GL_TRIANGLES);
+            if(Vec3.length(Vec3.sub(model.getPosition(),mainCamera.getPosition())) < renderDistance) {
+                shadowShader.setUniform("uModel", model.getTranformationMatrix());
+                model.getMesh().draw(GL_TRIANGLES);
+            }
         }
+
         glCullFace(GL_BACK);
     }
 

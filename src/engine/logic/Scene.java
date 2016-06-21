@@ -16,6 +16,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Scene {
 	private HolderSingleton holder;
+	private long window;
 
 	private NewRenderer newRenderer;
 	private Camera mainCamera;
@@ -27,7 +28,8 @@ public class Scene {
 
 	private boolean isLightMoving = false;
 
-	public Scene(int width, int height)	{
+	public Scene(long window, int width, int height)	{
+		this.window = window;
 		newRenderer = new NewRenderer(width,height);
 
 		holder = HolderSingleton.getInstance();
@@ -54,13 +56,15 @@ public class Scene {
 		holder.addMesh(new ObjLoader().loadObj("Meshes/ground_plane.obj").get(0)); //4
 		holder.addMesh(new ObjLoader().loadObj("Meshes/monkey_scene.obj").get(0)); //5
 		holder.addMesh(new ObjLoader().loadObj("Meshes/cube.obj").get(0));//6
+		holder.addMesh(new ObjLoader().loadObj("Meshes/new_csie_b1.obj").get(0));//7
 	}
 
 	private void createTextures() {
-		holder.addTexture(new Texture("Textures/dragon.png"));
-		holder.addTexture(new Texture("Textures/WoodPlanks.jpg"));
-		holder.addTexture(new Texture("Textures/rock.png"));
-		holder.addTexture(new Texture("Textures/Stone.jpg"));
+		holder.addTexture(new Texture("Textures/dragon.png")); //0
+		holder.addTexture(new Texture("Textures/WoodPlanks.jpg"));//1
+		holder.addTexture(new Texture("Textures/rock.png"));  //2
+		holder.addTexture(new Texture("Textures/Stone.jpg"));  //3
+		holder.addTexture(new Texture("Textures/Green.jpg")); //4
 	}
 
 	private void createModelTextures() {
@@ -68,6 +72,8 @@ public class Scene {
 		holder.addModelTexture(new ModelTexture(holder.getTexture(1), 0f, 0f));	// woodplanks
 		holder.addModelTexture(new ModelTexture(holder.getTexture(2), 0.5f, 32));	// rock
 		holder.addModelTexture(new ModelTexture(holder.getTexture(3), 0.5f, 32));	// stone
+		holder.addModelTexture(new ModelTexture(holder.getTexture(3), 0.5f, 32));	// stone
+		holder.addModelTexture(new ModelTexture(null, 1f, 32));	// tree
 	}
 
 	private void createModels() {
@@ -75,6 +81,7 @@ public class Scene {
 		//holder.addModel(new Model(new Vec3(0,1,0),holder.getMesh(0), holder.getModelTexture(3), 1)); // monkey
 		holder.addModel(new Model(new Vec3(-2,0,1),holder.getMesh(1), holder.getModelTexture(0), 1)); // dragon
 		holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), holder.getModelTexture(1), 5)); // ground_plane
+		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(7), null, 1f,1f)); // complex house
 		//holder.addModel(new Model(new Vec3(0,0,0),holder.getMesh(4), null, 5)); // ground_plane
 
 

@@ -18,6 +18,7 @@ public class Entity {
         this.position = position;
         this.scale = 1;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
+        //this.tranformationMatrix = Transformation.createTransMat(new Mat4(), position, scale);
 
         updateVectors();
     }

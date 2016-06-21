@@ -1,6 +1,7 @@
 #version 150
 
 #define AMBILIGHT 0.2
+#define PCF_FORSAMPLE 1
 
 #define LIGHTS 1
 uniform mat4[LIGHTS] uLightProjections;
@@ -26,7 +27,8 @@ in vec2 vTextureCoords;
 out vec4 FragColor;
 
 float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples, float nDotL ) {
-    float bias = max(0.005 * (1.0 - nDotL), 0.001);
+    //float bias = max(0.006 * (1.0 - nDotL), 0.003);
+    float bias = 0.003;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;
     vec2 UVCoords;
@@ -125,9 +127,10 @@ void main(void) {
             }
         }
 
+        //float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
         float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
         vec4 shadowCoords = uLightProjections[0] * uLightViews[0] * vec4(position.xyz,1.0);
-        float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,1, shadowBiasNdotL);
+        float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE, shadowBiasNdotL);
 
         FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
     }

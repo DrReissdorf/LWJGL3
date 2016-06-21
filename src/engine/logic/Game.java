@@ -8,12 +8,11 @@ import java.io.File;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Game {
-    private int WIDTH = 1280;
-    private int HEIGHT = 720;
+    private int WIDTH = 1440;
+    private int HEIGHT = 900;
     private Scene scene;
     private InputHandler inputHandler;
 
@@ -74,8 +73,8 @@ public class Game {
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
 
-        // Enable v-sync
-        //glfwSwapInterval(1);
+        // Enable/Disable v-limitFps
+        glfwSwapInterval(0);
 
         // Make the window visible
         glfwShowWindow(window);
@@ -90,11 +89,16 @@ public class Game {
 
         GL.createCapabilities();
 
-        scene = new Scene(WIDTH,HEIGHT);
+        scene = new Scene(window,WIDTH,HEIGHT);
         inputHandler = new InputHandler(window,scene);
 
         float   deltaTime;
         long    lastNanoTime  = 0;
+
+        long lastFpsNanoTime = 0;
+        int fps = 0;
+        long tempTime;
+        int frametime = 0;
 
         // Set the clear color
         //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
@@ -108,32 +112,42 @@ public class Game {
             deltaTime = (float)(time - lastNanoTime) * 1e-9f;
             lastNanoTime  = time;
 
+
+
             inputHandler.updateInput(deltaTime);
             scene.draw();
-            sync(60);
+            limitFps(120);
 
+            fps++;
+            tempTime = time-lastFpsNanoTime;
+            frametime += tempTime;
+            if(tempTime > 1000000000) {
+                glfwSetWindowTitle(window,"FPS: "+fps+" Frametime: "+ (float)((tempTime/fps/10000))/100+"ms");
+                lastFpsNanoTime = time;
+                fps = 0;
+            }
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
         }
     }
 
-    private long variableYieldTime, lastTime;
 
+    private long variableYieldTime, lastTime;
     /**
-     * An accurate sync method that adapts automatically
+     * An accurate limitFps method that adapts automatically
      * to the system it runs on to provide reliable results.
      *
      * @param fps The desired frame rate, in frames per second
      * @author kappa (On the LWJGL Forums)
      */
-    private void sync(int fps) {
+    private void limitFps(int fps) {
         if (fps <= 0) return;
 
         long sleepTime = 1000000000 / fps; // nanoseconds to sleep this frame
         // yieldTime + remainder micro & nano seconds if smaller than sleepTime
         long yieldTime = Math.min(sleepTime, variableYieldTime + sleepTime % (1000*1000));
-        long overSleep = 0; // time the sync goes over by
+        long overSleep = 0; // time the limitFps goes over by
 
         try {
             while (true) {
@@ -154,7 +168,7 @@ public class Game {
         }finally{
             lastTime = System.nanoTime() - Math.min(overSleep, sleepTime);
 
-            // auto tune the time sync should yield
+            // auto tune the time limitFps should yield
             if (overSleep > variableYieldTime) {
                 // increase by 200 microseconds (1/5 a ms)
                 variableYieldTime = Math.min(variableYieldTime + 200*1000, sleepTime);

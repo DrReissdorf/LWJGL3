@@ -37,7 +37,7 @@ public class Light extends Entity {
         this.range = range;
         this.circleMoveSpeed = circleMoveSpeed;
         this.distanceToOrigin = distanceToOrigin;
-        //projectionMatrix = Mat4.perspective(fov, holder.getShadowMapSize(), holder.getShadowMapSize(), 0.1f, range);
+        //projectionMatrix = Mat4.perspective(fov, holder.getShadowMapSize(), holder.getShadowMapSize(), 0.1f, 100);
         projectionMatrix = Mat4.orthographic(10,-10,10,-10,0,20);
         viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
         this.circleMoveAngle = circleMoveAngle;

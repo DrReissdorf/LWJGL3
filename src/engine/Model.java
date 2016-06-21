@@ -16,6 +16,13 @@ public class Model extends Entity {
         this.textureScale = textureScale;
     }
 
+    public Model(Vec3 position, Mesh mesh, ModelTexture modelTexture, float textureScale, float scale) {
+        super(position, scale);
+        this.mesh = mesh;
+        this.modelTexture = modelTexture;
+        this.textureScale = textureScale;
+    }
+
     public Mesh getMesh() {
         return mesh;
     }

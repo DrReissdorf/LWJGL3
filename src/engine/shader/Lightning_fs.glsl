@@ -3,7 +3,7 @@
 #define AMBILIGHT 0.2
 #define PCF_FORSAMPLE 1
 
-#define LIGHTS 1
+#define LIGHTS 6
 uniform mat4[LIGHTS] uLightProjections;
 uniform mat4[LIGHTS] uLightViews;
 uniform vec3[LIGHTS] uLightPosArray;
@@ -32,8 +32,8 @@ uniform mat4 uSunView;
 
 
 float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples ) {
-    //float bias = max(0.006 * (1.0 - nDotL), 0.003);
-    float bias = 0.003;
+    //float bias = max(0.002 * (1.0 - nDotL), 0.001);
+    float bias = 0.002;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;
     vec2 UVCoords;
@@ -109,12 +109,12 @@ void main(void) {
     } else {
         float spec_reflectivity = normal.a;
         float spec_shininess = color.a;
-        vec3 ambient = 0.15 * color.rgb;
+        vec3 ambient = AMBILIGHT * color.rgb ;
 
         vec3 diffuseFinal = vec3(0);
         vec3 specularFinal = vec3(0);
 
-        /* SUN DIRECTIONAL LIGHT */
+        /******************************************* SUN DIRECTIONAL LIGHT ******************************************/
         vec3 sun_diffuse = vec3(0);
         vec3 sun_specular = vec3(0);
         vec3 sun_pos = uSunDirection+position.xyz;
@@ -124,8 +124,9 @@ void main(void) {
         float sun_nDotl = dot(sun_N, sun_L);
         sun_diffuse += calculateDiffuse(uSunColor,sun_nDotl);
         sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSunColor, sun_nDotl, specValues.g,specValues.r);
-        /*************************/
+        /*************************************************************************************************************/
 
+        /********************************************** NORMAL LIGHT *************************************************/
         float nDotl;
         float attenuation;
         vec3 L;
@@ -144,17 +145,16 @@ void main(void) {
                 specularFinal += calculateSpecularBlinn(N, V, L, uLightColorArray[i], nDotl, specValues.g,specValues.r) * attenuation;
             }
         }
-
-        //float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
-        //float shadowBiasNdotL = dot(normalize(normal.xyz),normalize(uLightPosArray[0]-position.xyz));
-        //vec4 shadowCoords = uLightProjections[0] * uLightViews[0] * vec4(position.xyz,1.0);
-        //float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE, shadowBiasNdotL);
-
+        /*************************************************************************************************************/
 
         vec4 shadowCoords = uSunProjection * uSunView * vec4(position.xyz,1.0);
         float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE);
             //shadowFactor = 1;
         //FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
-          FragColor = vec4((ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal * color.rgb, 1.0);
+        //vec3 lighting = (ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal;  //FIRST OPTION
+        vec3 sunLightingAndShadow = (shadowFactor * (sun_diffuse+sun_specular));
+        vec3 LightSourceLighting = diffuseFinal+specularFinal;
+        vec3 finalLighting = sunLightingAndShadow + LightSourceLighting +AMBILIGHT;  //SECOND OPTION
+        FragColor = vec4(finalLighting * color.rgb, 1.0);
     }
 }

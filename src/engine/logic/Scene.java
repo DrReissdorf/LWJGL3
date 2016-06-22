@@ -21,7 +21,7 @@ public class Scene {
 	float mainCameraFar    = 500.0f;
 
 
-	private boolean isLightMoving = false;
+	private boolean isLightMoving = true;
 
 	public Scene(long window, int width, int height)	{
 		this.window = window;
@@ -106,7 +106,13 @@ public class Scene {
 		}
 */
 		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(1f,1f,1f),1,0.01f,5,0));
-		holder.addLight(new PointLight(new Vec3(0,3,-2), new Vec3(1f,0f,0f),5,0.01f,5,180));
+
+		holder.addLight(new PointLight(new Vec3(2,3,-2), new Vec3(0f,1f,0f),5,0.01f,5,0));
+		holder.addLight(new PointLight(new Vec3(-2,3,-2), new Vec3(1f,0f,0f),5,0.01f,5,45));
+		holder.addLight(new PointLight(new Vec3(2,3,-2), new Vec3(0f,0f,1f),5,0.01f,5,90));
+		holder.addLight(new PointLight(new Vec3(-2,3,-2), new Vec3(0f,1f,0f),5,0.01f,5,135));
+		holder.addLight(new PointLight(new Vec3(2,3,-2), new Vec3(1f,0f,0f),5,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(-2,3,-2), new Vec3(0f,0f,1f),5,0.01f,5,225));
     }
 
 	public Camera getMainCamera() {

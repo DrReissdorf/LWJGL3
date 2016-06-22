@@ -1,5 +1,6 @@
 package engine;
 
+import engine.Light.Light;
 import math.Mat4;
 import math.Vec3;
 import toolbox.Transformation;
@@ -8,13 +9,16 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static math.MathUtil.PI;
 
-public class GameObject {
+public class GameObjectRoot {
     private Mat4 tranformationMatrix;
     private float scale;
     private Vec3 position, direction, right, forward, up;
     private float rotX=0, rotY=0, rotZ=0;
 
-    public GameObject(Vec3 position) {
+    private Light light;
+    private Model model;
+
+    public GameObjectRoot(Vec3 position) {
         this.position = position;
         this.scale = 1;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
@@ -23,7 +27,15 @@ public class GameObject {
         updateVectors();
     }
 
-    public GameObject(Vec3 position, float scale) {
+    public GameObjectRoot(Vec3 position, float scale) {
+        this.position = position;
+        this.scale = scale;
+        this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
+
+        updateVectors();
+    }
+
+    public GameObjectRoot(Vec3 position, float scale, Camera camera) {
         this.position = position;
         this.scale = scale;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
@@ -186,5 +198,21 @@ public class GameObject {
 
     public float getRotY() {
         return rotY;
+    }
+
+    public Model getModel() {
+        return model;
+    }
+
+    public void setModel(Model model) {
+        this.model = model;
+    }
+
+    public Light getLight() {
+        return light;
+    }
+
+    public void setLight(Light light) {
+        this.light = light;
     }
 }

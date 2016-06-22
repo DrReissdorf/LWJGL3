@@ -1,11 +1,13 @@
 package engine.Light;
 
-import engine.GameObject;
+import engine.GameObjectRoot;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
 
-public class Light extends GameObject {
+public class Light {
+    private GameObjectRoot gameObjectRoot;
+
     private Mat4 viewMatrix;
     private Mat4 projectionMatrix;
 
@@ -21,23 +23,19 @@ public class Light extends GameObject {
 
     private HolderSingleton holder;
 
-    public Light(Vec3 position, Vec3 color, float range) {
-        super(position);
+    public Light(Vec3 color, float range) {
         holder = HolderSingleton.getInstance();
         this.color = color;
         this.range = range;
         projectionMatrix = Mat4.perspective(fov, holder.getShadowMapSize(), holder.getShadowMapSize(), 0.1f, range);
-        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
     }
 
-    public Light(Vec3 position, Vec3 color, float range, float circleMoveSpeed, float distanceToOrigin, float circleMoveAngle) {
-        super(position);
+    public Light(Vec3 color, float range, float circleMoveSpeed, float distanceToOrigin, float circleMoveAngle) {
         holder = HolderSingleton.getInstance();
         this.color = color;
         this.range = range;
         this.circleMoveSpeed = circleMoveSpeed;
         this.distanceToOrigin = distanceToOrigin;
-        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
         this.circleMoveAngle = circleMoveAngle;
     }
 
@@ -58,9 +56,9 @@ public class Light extends GameObject {
     }
 
     public void moveAroundCenter() {
-        Vec3 entityPosition = getPosition();
+        Vec3 entityPosition = gameObjectRoot.getPosition();
 
-        setPosition(new Vec3(0 + (float)Math.sin(circleMoveAngle) * distanceToOrigin, entityPosition.y, 0 + (float)Math.cos(circleMoveAngle) * distanceToOrigin));
+        gameObjectRoot.setPosition(new Vec3(0 + (float)Math.sin(circleMoveAngle) * distanceToOrigin, entityPosition.y, 0 + (float)Math.cos(circleMoveAngle) * distanceToOrigin));
 
         circleMoveAngle += circleMoveSpeed;
         if(circleMoveAngle >= 360) circleMoveAngle -= 360;
@@ -69,10 +67,15 @@ public class Light extends GameObject {
     }
 
     private void updateViewMatrix() {
-        viewMatrix = Mat4.lookAt(getPosition(), new Vec3(), new Vec3(0, 1, 0));
+        viewMatrix = Mat4.lookAt(gameObjectRoot.getPosition(), new Vec3(), new Vec3(0, 1, 0));
+    }
+
+    public Vec3 getPosition() {
+        return gameObjectRoot.getPosition();
     }
 
     public Mat4 getViewMatrix() {
+        viewMatrix = Mat4.lookAt(gameObjectRoot.getPosition(), new Vec3(), new Vec3(0, 1, 0));
         return viewMatrix;
     }
 
@@ -82,5 +85,13 @@ public class Light extends GameObject {
 
     public void setProjectionMatrix(Mat4 projectionMatrix) {
         this.projectionMatrix = projectionMatrix;
+    }
+
+    public GameObjectRoot getGameObjectRoot() {
+        return gameObjectRoot;
+    }
+
+    public void setGameObjectRoot(GameObjectRoot gameObjectRoot) {
+        this.gameObjectRoot = gameObjectRoot;
     }
 }

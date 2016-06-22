@@ -4,20 +4,18 @@ package engine;
 import math.Vec3;
 import util.Mesh;
 
-public class Model extends GameObject {
+public class Model {
     private Mesh mesh;
     private ModelTexture modelTexture;
     private float textureScale;
 
-    public Model(Vec3 position, Mesh mesh, ModelTexture modelTexture, float textureScale) {
-        super(position);
+    public Model(Mesh mesh, ModelTexture modelTexture, float textureScale) {
         this.mesh = mesh;
         this.modelTexture = modelTexture;
         this.textureScale = textureScale;
     }
 
-    public Model(Vec3 position, Mesh mesh, ModelTexture modelTexture, float textureScale, float scale) {
-        super(position, scale);
+    public Model(Mesh mesh, ModelTexture modelTexture, float textureScale, float scale) {
         this.mesh = mesh;
         this.modelTexture = modelTexture;
         this.textureScale = textureScale;

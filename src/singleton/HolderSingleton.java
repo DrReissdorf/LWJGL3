@@ -9,13 +9,14 @@ import util.Texture;
 import java.util.ArrayList;
 
 public class HolderSingleton {
-    private int shadowMapSize = 2048;
+    private int shadowMapSize = 1024;
 
     private static HolderSingleton holderSingleton;
     private ArrayList<Light> lights;
-    private ArrayList<GameObject> entities;
+    private ArrayList<GameObjectRoot> entities;
     private ArrayList<Mesh> meshes;
     private ArrayList<Model> models;
+    private ArrayList<GameObjectRoot> gameObjectRoots;
     private ArrayList<ModelTexture> modelTextures;
     private ArrayList<Texture> textures;
     private Sun sun;
@@ -24,9 +25,10 @@ public class HolderSingleton {
         lights = new ArrayList<>();
         entities = new ArrayList<>();
         meshes = new ArrayList<>();
-        models = new ArrayList<Model>();
+        models = new ArrayList<>();
         modelTextures = new ArrayList<>();
         textures = new ArrayList<>();
+        gameObjectRoots = new ArrayList<>();
     }
 
     public static HolderSingleton getInstance() {
@@ -34,11 +36,11 @@ public class HolderSingleton {
         return holderSingleton;
     }
 
-    public void addEntity(GameObject entity) {
+    public void addEntity(GameObjectRoot entity) {
         entities.add(entity);
     }
 
-    public GameObject getEntity(int position) {
+    public GameObjectRoot getEntity(int position) {
         return entities.get(position);
     }
 
@@ -74,7 +76,7 @@ public class HolderSingleton {
         return textures.get(position);
     }
 
-    public ArrayList<GameObject> getEntityArrayList() {
+    public ArrayList<GameObjectRoot> getEntityArrayList() {
         return entities;
     }
 
@@ -94,7 +96,7 @@ public class HolderSingleton {
         return lights.get(position);
     }
 
-    public ArrayList<GameObject> getEntities() {
+    public ArrayList<GameObjectRoot> getEntities() {
         return entities;
     }
 
@@ -116,6 +118,18 @@ public class HolderSingleton {
 
     public ArrayList<Light> getLights() {
         return lights;
+    }
+
+    public ArrayList<GameObjectRoot> getGameObjectRoots() {
+        return gameObjectRoots;
+    }
+
+    public GameObjectRoot getGameObjectRoot(int position) {
+        return gameObjectRoots.get(position);
+    }
+
+    public void addGameObjectRoot(GameObjectRoot gameObjectRoot) {
+        gameObjectRoots.add(gameObjectRoot);
     }
 
     public void setSun(Sun sun) {

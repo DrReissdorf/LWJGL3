@@ -223,7 +223,7 @@ public class Renderer {
         shadowShader.setUniform("uView", sun.getViewMatrix());
 
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null) {
+            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null) {
                 shadowShader.setUniform("uModel", gameObjectRoot.getTranformationMatrix());
                 gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
             }

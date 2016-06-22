@@ -90,9 +90,9 @@ public class Scene {
 	}
 
 	private void createGameObjects() {
-		GameObjectRoot dragon = new GameObjectRoot(new Vec3(0,0,0));
-		dragon.setModel(holder.getModel(1));
-		holder.addGameObjectRoot(dragon);
+		//GameObjectRoot dragon = new GameObjectRoot(new Vec3(0,0,0));
+		//dragon.setModel(holder.getModel(1));
+		//holder.addGameObjectRoot(dragon);
 
 		int value = 4;
 		for(int x=-value ; x<=value ; x++) {
@@ -143,7 +143,7 @@ public class Scene {
 
 
 */
-		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(0f,0f,0f),1,0.01f,5,0)); //new Vec3(1f,1f,1f)
+		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(1f,1f,1f),1,0.01f,5,0)); //new Vec3(1f,1f,1f)
 
 		holder.addLight(new PointLight(new Vec3(0f,1f,0f),5,0.01f,5,90));
 		holder.addLight(new PointLight(new Vec3(1f,0f,0f),5,0.01f,5,180));

@@ -1,46 +1,26 @@
 package engine.Light;
 
 import engine.GameObjectRoot;
+import engine.Model;
 import math.Mat4;
 import math.Vec3;
-import singleton.HolderSingleton;
 
 public class Sun {
+    private GameObjectRoot gameObjectRoot;
     private Mat4 viewMatrix;
     private Mat4 projectionMatrix;
 
-    private Vec3 position;
     private Vec3 color;
+    private Vec3 originalColor;
     private float range;
+    private Model model;
 
-    private float circleMoveSpeed;
-    private float circleMoveAngle = 0;
-
-    private float fov = 100f;
-
-    float distanceToOrigin;
-
-    private HolderSingleton holder;
-
-    public Sun(Vec3 position, Vec3 color, float range) {
-        holder = HolderSingleton.getInstance();
-        this.position = position;
+    public Sun(Vec3 color, float range) {
         this.color = color;
+        originalColor = new Vec3(color);
         this.range = range;
         projectionMatrix = Mat4.orthographic(10,-10,10,-10,-10,20);
-        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
-    }
 
-    public Sun(Vec3 position, Vec3 color, float range, float circleMoveSpeed, float distanceToOrigin, float circleMoveAngle) {
-        holder = HolderSingleton.getInstance();
-        this.position = position;
-        this.color = color;
-        this.range = range;
-        this.circleMoveSpeed = circleMoveSpeed;
-        this.distanceToOrigin = distanceToOrigin;
-        projectionMatrix = Mat4.orthographic(10,-10,10,-10,-10,20);
-        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
-        this.circleMoveAngle = circleMoveAngle;
     }
 
     public Vec3 getColor() {
@@ -59,26 +39,31 @@ public class Sun {
         this.range = range;
     }
 
-    public void moveAroundCenter() {
-        Vec3 entityPosition = position;
+    public void dayNightCycle(float dayTime, float dayTimeIncrease) {
+        gameObjectRoot.setPosition(new Vec3(0 + (float)Math.cos(Math.toRadians(dayTime)) * 5, 0 + (float)Math.sin(Math.toRadians(dayTime)) * 5, gameObjectRoot.getPosition().z));
 
-        position = new Vec3(0 + (float)Math.sin(circleMoveAngle) * distanceToOrigin, entityPosition.y, 0 + (float)Math.cos(circleMoveAngle) * distanceToOrigin);
+        float fadeSpeed = dayTimeIncrease/5;
+        if(dayTime>180) {
+            if(color.x > 0) color.x -= fadeSpeed;
+            if(color.y > 0) color.y -= fadeSpeed;
+            if(color.z > 0) color.z -= fadeSpeed;
 
-        circleMoveAngle += circleMoveSpeed;
-        if(circleMoveAngle >= 360) circleMoveAngle -= 360;
-
-        updateViewMatrix();
-    }
-
-    private void updateViewMatrix() {
-        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
+        } else {
+            if(color.x <= 0) color.x = 0.01f;
+            if(color.y <= 0) color.y = 0.01f;
+            if(color.z <= 0) color.z = 0.01f;
+            if(color.x < originalColor.x) color.x += fadeSpeed;
+            if(color.y < originalColor.y) color.y += fadeSpeed;
+            if(color.z < originalColor.z) color.z += fadeSpeed;
+        }
     }
 
     public Vec3 getPosition() {
-        return position;
+        return gameObjectRoot.getPosition();
     }
 
     public Mat4 getViewMatrix() {
+        viewMatrix = Mat4.lookAt(gameObjectRoot.getPosition(), new Vec3(), new Vec3(0, 1, 0));
         return viewMatrix;
     }
 
@@ -88,5 +73,21 @@ public class Sun {
 
     public void setProjectionMatrix(Mat4 projectionMatrix) {
         this.projectionMatrix = projectionMatrix;
+    }
+
+    public Model getModel() {
+        return model;
+    }
+
+    public void setModel(Model model) {
+        this.model = model;
+    }
+
+    public GameObjectRoot getGameObjectRoot() {
+        return gameObjectRoot;
+    }
+
+    public void setGameObjectRoot(GameObjectRoot gameObjectRoot) {
+        this.gameObjectRoot = gameObjectRoot;
     }
 }

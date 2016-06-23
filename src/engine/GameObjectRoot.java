@@ -1,6 +1,7 @@
 package engine;
 
 import engine.Light.Light;
+import engine.Light.Sun;
 import math.Mat4;
 import math.Vec3;
 import toolbox.Transformation;
@@ -17,6 +18,7 @@ public class GameObjectRoot {
 
     private Light light;
     private Model model;
+    private Sun sun;
 
     public GameObjectRoot(Vec3 position) {
         this.position = position;
@@ -214,5 +216,13 @@ public class GameObjectRoot {
 
     public void setLight(Light light) {
         this.light = light;
+    }
+
+    public Sun getSun() {
+        return sun;
+    }
+
+    public void setSun(Sun sun) {
+        this.sun = sun;
     }
 }

@@ -1,4 +1,8 @@
 #version 150
+#extension GL_ARB_explicit_attrib_location : enable
+
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 #define GAMMA_CORRECTION_VALUE 2.2
 
@@ -12,8 +16,6 @@
 #define EXPOSURE_BIAS 2
 
 in vec2 vTextureCoords;
-out vec4 FragColor;
-
 uniform sampler2D uTexture;
 
 vec3 gammaCorrection(vec3 color, float gamma) {
@@ -23,7 +25,7 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 vec3 filmicToneMapping(vec3 color, float exposureBias) {
     vec3 newColor;
 
-    newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F) * EXPOSURE_BIAS;
+    newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F) * exposureBias ;
     newColor /= ((WHITE*(A*WHITE+C*B)+D*E)/(WHITE*(A*WHITE+B)+D*F)) - E/F;
 
     return newColor;
@@ -31,6 +33,12 @@ vec3 filmicToneMapping(vec3 color, float exposureBias) {
 
 void main() {
     vec4 color = texture(uTexture,vTextureCoords);
-    color = vec4(filmicToneMapping(color.xyz,3.25),1.0);
+
+    float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0) BrightColor = vec4(color.rgb, 1.0);
+    BrightColor = color;
+
+    color = vec4(filmicToneMapping(color.xyz,EXPOSURE_BIAS),1.0);
+    BrightColor = vec4(1,1,1,1);
     FragColor = vec4(gammaCorrection(color.rgb,GAMMA_CORRECTION_VALUE),1.0);
-    }
+}

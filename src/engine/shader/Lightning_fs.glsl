@@ -1,6 +1,7 @@
 #version 150
 
-#define AMBILIGHT 0.2
+#define AMBILIGHT_DAY 0.2
+#define AMBILIGHT_NIGHT 0.2
 #define PCF_FORSAMPLE 1
 
 #define LIGHTS 6
@@ -9,6 +10,7 @@ uniform mat4[LIGHTS] uLightViews;
 uniform vec3[LIGHTS] uLightPosArray;
 uniform vec3[LIGHTS] uLightColorArray;
 uniform float[LIGHTS] uLightRangesArray;
+uniform float uDayTime;
 
 uniform vec3 cameraPos;
 uniform vec3 backgroundColor;
@@ -22,18 +24,16 @@ uniform mat4 uView;
 
 in vec2 vTextureCoords;
 
-out vec4 FragColor;
-
-
 uniform vec3 uSunDirection;
 uniform vec3 uSunColor;
 uniform mat4 uSunProjection;
 uniform mat4 uSunView;
 
+out vec4 FragColor;
 
-float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples ) {
-    //float bias = max(0.002 * (1.0 - nDotL), 0.001);
-    float bias = 0.002;
+float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples, float nDotL ) {
+    float bias = max(0.01 * (1.0 - nDotL), 0.002);
+    //float bias = 0.002;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;
     vec2 UVCoords;
@@ -107,12 +107,21 @@ void main(void) {
     if(normal.x==0.0 && normal.y==0.0 && normal.z==0.0) {
         FragColor = vec4(backgroundColor,1.0);
     } else {
-        if(specValues.z == 1) {
+        if(specValues.z == 1) { //light detected
             FragColor = color;
         } else {
             float spec_reflectivity = normal.a;
             float spec_shininess = color.a;
-            vec3 ambient = AMBILIGHT * color.rgb ;
+
+
+            //vec3 ambient = AMBILIGHT * color.rgb ;
+
+               float ambient;
+               if(uDayTime > 180) {
+                   ambient = AMBILIGHT_NIGHT;
+               } else {
+                   ambient = AMBILIGHT_DAY;
+               }
 
             vec3 diffuseFinal = vec3(0);
             vec3 specularFinal = vec3(0);
@@ -151,13 +160,13 @@ void main(void) {
             /*************************************************************************************************************/
 
             vec4 shadowCoords = uSunProjection * uSunView * vec4(position.xyz,1.0);
-            float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE);
+            float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(sun_N,sun_L)));
                 //shadowFactor = 1;
             //FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
             //vec3 lighting = (ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal;  //FIRST OPTION
             vec3 sunLightingAndShadow = (shadowFactor * (sun_diffuse+sun_specular));
             vec3 LightSourceLighting = diffuseFinal+specularFinal;
-            vec3 finalLighting = sunLightingAndShadow + LightSourceLighting +AMBILIGHT;  //SECOND OPTION
+            vec3 finalLighting = sunLightingAndShadow + LightSourceLighting + ambient;  //SECOND OPTION
             FragColor = vec4(finalLighting * color.rgb, 1.0);
         }
     }

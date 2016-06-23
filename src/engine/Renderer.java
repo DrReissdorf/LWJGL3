@@ -23,15 +23,15 @@ import static org.lwjgl.opengl.GL30.*;
 public class Renderer {
     private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
     private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
-    private final float renderDistance = 50;
+    private final float renderDistance = 100;
 
     private final String shaderLocation = "src/engine/shader/";
 
     private MyShaderProgram geometryShader;
     private MyShaderProgram lightningShader;
-
     private MyShaderProgram shadowShader;
     private MyShaderProgram postProcessShader;
+    private MyShaderProgram bloomShader;
 
     private HolderSingleton holder;
 
@@ -45,17 +45,18 @@ public class Renderer {
     private int shadowTextureID;
     private Texture shadowMapTexture;
 
-    private int postProcessTextureID;
     private int postProcessFrameBuffer;
     private Texture postProcessTexture;
-    private Mesh postProcessQuad;
 
-    private Mesh lightningQuad;
+    private Texture bloomTexture;
+    private int bloomFrameBuffer;
+    private Texture brightObjectsTexture;
+
+    private Mesh screenQuad;
     private Texture gBufferPositionTex, gBufferNormalReflectTex, gBufferColorSpecTex, gBufferSpecTex;
     private int gBufferID;
 
     private int windowWidth, windowHeight;
-    private final Vec3 backgroundColor = RgbToFloat(54,155,255);
 
     public Renderer(int windowWidth, int windowHeight) {
         this.windowHeight = windowHeight;
@@ -67,25 +68,27 @@ public class Renderer {
         postProcessShader   = new MyShaderProgram( shaderLocation + "Postprocess_vs.glsl",  shaderLocation + "Postprocess_fs.glsl" );
         geometryShader      = new MyShaderProgram( shaderLocation + "Geometry_vs.glsl",  shaderLocation + "Geometry_fs.glsl" );
         lightningShader     = new MyShaderProgram( shaderLocation + "Lightning_vs.glsl",  shaderLocation + "Lightning_fs.glsl" );
+        bloomShader         = new MyShaderProgram( shaderLocation + "Bloom_vs.glsl",  shaderLocation + "Bloom_fs.glsl" );
 
         initShadows();
         initGeometryRendering();
         initPostProcessing();
+        initBloomProcessing();
         resizeTextures();
 
-        postProcessQuad = new MeshCreator().createQuad();
-        lightningQuad = new MeshCreator().createQuad();
+        screenQuad = new MeshCreator().createQuad();
 
         glEnable(GL_CULL_FACE);
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
     }
 
-    public void renderScene(Camera mainCamera) {
+    public void renderScene(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
         renderGeometry(mainCamera);
         renderShadowMap(mainCamera);
-        renderLightning(mainCamera);
+        renderLightning(dayTime, backgroundColor,mainCamera);
         postProcess();
+        bloom();
     }
 
     public void renderGeometry(Camera mainCamera) {
@@ -104,7 +107,10 @@ public class Renderer {
 
                 Model model = gameObjectRoot.getModel();
 
-                if(gameObjectRoot.getLight() != null) {
+                if(gameObjectRoot.getSun() != null) {
+                    geometryShader.setUniform("uIsLight", 1);
+                    geometryShader.setUniform("uLightColor", gameObjectRoot.getSun().getColor());
+                } else if(gameObjectRoot.getLight() != null) {
                     geometryShader.setUniform("uIsLight", 1);
                     geometryShader.setUniform("uLightColor", gameObjectRoot.getLight().getColor());
                 } else {
@@ -116,6 +122,7 @@ public class Renderer {
                         geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
                         geometryShader.setUniform("uTextureScale",  model.getTextureScale());
                     } else {
+                        geometryShader.setUniform("uIsLight", 0);
                         geometryShader.setUniform("uHasTexture", 0.0f);
                         geometryShader.setUniform("uShininess", 100.0f);
                         geometryShader.setUniform("uReflectivity", 1.0f);
@@ -128,28 +135,12 @@ public class Renderer {
         }
     }
 
-    public void renderLightning(Camera mainCamera) {
+    public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
         glBindFramebuffer(GL_FRAMEBUFFER, postProcessFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glClearColor(0.0f,0.0f,0.0f,1f);
-        //glClearColor(backgroundColor.x,backgroundColor.y,backgroundColor.z,1f);
         glViewport(0, 0, windowWidth, windowHeight);
 
         ArrayList<Light> lights = new ArrayList<>();
-
-      /*  lightPositionArray = new Vec3[lights.size()];
-        lightColorArray = new Vec3[lights.size()];
-        lightRangeArray = new float[lights.size()];
-        lightViewArray = new Mat4[lights.size()];
-        lightProjectionArray = new Mat4[lights.size()];
-
-        for(int i=0 ; i<lights.size() ; i++) {
-            lightPositionArray[i] = lights.get(i).getPosition();
-            lightColorArray[i] = lights.get(i).getColor();
-            lightRangeArray[i] = lights.get(i).getRange();
-            lightViewArray[i] = lights.get(i).getViewMatrix();
-            lightProjectionArray[i] = lights.get(i).getProjectionMatrix();
-        } */
 
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
             Light light = gameObjectRoot.getLight();
@@ -180,6 +171,8 @@ public class Renderer {
         lightningShader.setUniform("backgroundColor", backgroundColor);
         lightningShader.setUniform("cameraPos", mainCamera.getPosition());
 
+        lightningShader.setUniform("uDayTime", dayTime);
+
         lightningShader.setUniform("uPositionTex", gBufferPositionTex);
         lightningShader.setUniform("uNormalTex", gBufferNormalReflectTex);
         lightningShader.setUniform("uColorSpecTex", gBufferColorSpecTex);
@@ -199,7 +192,7 @@ public class Renderer {
 
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 
-        lightningQuad.draw();
+        screenQuad.draw();
     }
 
 
@@ -223,7 +216,7 @@ public class Renderer {
         shadowShader.setUniform("uView", sun.getViewMatrix());
 
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null) {
+            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
                 shadowShader.setUniform("uModel", gameObjectRoot.getTranformationMatrix());
                 gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
             }
@@ -233,17 +226,36 @@ public class Renderer {
     }
 
     public void postProcess() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, bloomFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);
-        postProcessQuad.draw();
+        screenQuad.draw();
+    }
+
+    public void bloom() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+
+        bloomShader.useProgram();
+        bloomShader.setUniform("uTexture", bloomTexture);
+        bloomShader.setUniform("uBrightObjectsTexture", brightObjectsTexture);
+        screenQuad.draw();
     }
 
     private void resizeTextures() {
         glBindTexture( GL_TEXTURE_2D, postProcessTexture.getID() );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        glBindTexture( GL_TEXTURE_2D, brightObjectsTexture.getID() );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        glBindTexture( GL_TEXTURE_2D, bloomTexture.getID() );
         glTexImage2D( GL_TEXTURE_2D, 0, EXTTextureSRGB.GL_SRGB_EXT, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -280,9 +292,18 @@ public class Renderer {
 
     private void initPostProcessing() {
         // To make texture resizable we need to assign it to 4k first, it just scales down
-        postProcessTextureID = FrameBufferTextureFactory.setupPostProcessTextureBuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
-        postProcessTexture = new Texture(postProcessTextureID);
-        postProcessFrameBuffer = FrameBufferFactory.setupPostProcessFrameBuffer(postProcessTextureID, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        int ID = FrameBufferTextureFactory.setupPostProcessTextureBuffer(windowWidth,windowHeight);
+        postProcessTexture = new Texture(ID);
+        postProcessFrameBuffer = FrameBufferFactory.setupPostProcessFrameBuffer(postProcessTexture.getID(), MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+    }
+
+    private void initBloomProcessing() {
+        int[] textureIDs = FrameBufferTextureFactory.setupBloomTextureBuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+
+        bloomTexture = new Texture(textureIDs[0]);
+        brightObjectsTexture = new Texture(textureIDs[1]);
+
+        bloomFrameBuffer = FrameBufferFactory.setupBloomFrameBuffer(bloomTexture.getID(),brightObjectsTexture.getID(),windowWidth,windowHeight);
     }
 
     private void initGeometryRendering() {
@@ -294,10 +315,6 @@ public class Renderer {
         gBufferSpecTex = new Texture(gBufferTextureIDs[3]);
 
         gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex, gBufferSpecTex);
-    }
-
-    public Vec3 RgbToFloat(int r, int g, int b) {
-        return new Vec3(r/255f,g/255f,b/255f);
     }
 
     private int[] getClosestLightsIndices(Vec3 currentPos) {
@@ -324,48 +341,5 @@ public class Renderer {
 
         int[] lightIndices = {holder.getLights().indexOf(closest), holder.getLights().indexOf(sndClosest)};
         return lightIndices;
-    }
-
-   /* private void updateArrayLists() {
-        lightPositions.clear();
-        lightColors.clear();
-        lightRanges.clear();
-        lightViews.clear();
-        lightProjections.clear();
-
-        for(Light light : holder.getLights()) {
-            lightPositions.add(light.getPosition());
-            lightColors.add(light.getColor());
-            lightRanges.add(light.getRange());
-            lightViews.add(light.getViewMatrix());
-            lightProjections.add(light.getProjectionMatrix());
-        }
-    } */
-
-    private Mat4[] convertMat4ArrayListToMat4Array(ArrayList<Mat4> mats) {
-        Mat4[] matArray = new Mat4[mats.size()];
-        for(int i=0 ; i<mats.size() ; i++) {
-            matArray[i] = mats.get(i);
-        }
-
-        return matArray;
-    }
-
-    private float[] convertFloatArrayListToFloatArray(ArrayList<Float> floats) {
-        float[] floatArray = new float[floats.size()];
-        for(int i=0 ; i<floats.size() ; i++) {
-            floatArray[i] = floats.get(i);
-        }
-
-        return floatArray;
-    }
-
-    private Vec3[] convertVec3ArrayListToVec3Array(ArrayList<Vec3> vectors) {
-        Vec3[] vecArray = new Vec3[vectors.size()];
-        for(int i=0 ; i<vectors.size() ; i++) {
-            vecArray[i] = vectors.get(i);
-        }
-
-        return vecArray;
     }
 }

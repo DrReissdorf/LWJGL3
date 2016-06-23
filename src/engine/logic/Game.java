@@ -98,7 +98,6 @@ public class Game {
         long lastFpsNanoTime = 0;
         int fps = 0;
         long tempTime;
-        int frametime = 0;
 
         // Set the clear color
         //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
@@ -115,12 +114,11 @@ public class Game {
 
 
             inputHandler.updateInput(deltaTime);
-            scene.draw();
+            scene.draw(deltaTime);
             limitFps(120);
 
             fps++;
             tempTime = time-lastFpsNanoTime;
-            frametime += tempTime;
             if(tempTime > 1000000000) {
                 glfwSetWindowTitle(window,"FPS: "+fps+" Frametime: "+ (float)((tempTime/fps/10000))/100+"ms");
                 lastFpsNanoTime = time;

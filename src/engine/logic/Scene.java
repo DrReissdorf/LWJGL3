@@ -16,10 +16,14 @@ public class Scene {
 	private Renderer newRenderer;
 	private Camera mainCamera;
 
-	float mainCameraFov = 70.0f;
-	float mainCameraNear   = 0.01f;
-	float mainCameraFar    = 500.0f;
+	private float mainCameraFov = 70.0f;
+	private float mainCameraNear   = 0.01f;
+	private float mainCameraFar    = 500.0f;
 
+	private float dayTime = 40;
+	private float dayTimeIncrease = 0.1f; //0.005f;
+	private Vec3 backgroundColor = RgbToFloat(54,155,255);
+	private Vec3 originalbackgroundColor = RgbToFloat(54,155,255);
 
 	private boolean isLightMoving = true;
 
@@ -39,8 +43,8 @@ public class Scene {
 		createGameObjects();
 	}
 
-	public void draw() {
-		newRenderer.renderScene(mainCamera);
+	public void draw(float deltaTime) {
+		newRenderer.renderScene(dayTime,backgroundColor,mainCamera);
 
 		for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
 			Light light = gameObjectRoot.getLight();
@@ -48,6 +52,11 @@ public class Scene {
 				if(isLightMoving) light.moveAroundCenter();
 			}
 		}
+
+		if(dayTime > 360) dayTime = dayTime-360;
+		if(isLightMoving) dayTime += dayTimeIncrease;
+		fadeBackgroundColor(dayTime,dayTimeIncrease);
+		holder.getSun().dayNightCycle(dayTime,dayTimeIncrease);
 	}
 
 	private void createMeshes() {
@@ -94,6 +103,10 @@ public class Scene {
 		//dragon.setModel(holder.getModel(1));
 		//holder.addGameObjectRoot(dragon);
 
+		GameObjectRoot cube = new GameObjectRoot(new Vec3(2,0.5f,0));
+		cube.setModel(holder.getModel(0));
+		holder.addGameObjectRoot(cube);
+
 		int value = 4;
 		for(int x=-value ; x<=value ; x++) {
 			for (int z=-value; z<=value; z++) {
@@ -113,8 +126,15 @@ public class Scene {
 			}
 		}
 
+		/* SUN */
+		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-1));
+		lightGameObject.setModel(holder.getModel(0));
+		lightGameObject.setSun(holder.getSun());
+		lightGameObject.getSun().setGameObjectRoot(lightGameObject);
+		holder.addGameObjectRoot(lightGameObject);
+
 		/* LIGHT GAMEOBJECTS */
-		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(-3,3,1));
+		lightGameObject = new GameObjectRoot(new Vec3(-3,3,1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(0));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
@@ -140,10 +160,8 @@ public class Scene {
 				holder.addLight(new Light(new Vec3(x*3, 5, z*3), new Vec3(1f, 1f, 1f), 100f, 0.01f, 5));
 			}
 		}
-
-
 */
-		holder.setSun(new Sun(new Vec3(3,3,3), new Vec3(1f,1f,1f),1,0.01f,5,0)); //new Vec3(1f,1f,1f)
+		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
 
 		holder.addLight(new PointLight(new Vec3(0f,1f,0f),5,0.01f,5,90));
 		holder.addLight(new PointLight(new Vec3(1f,0f,0f),5,0.01f,5,180));
@@ -151,11 +169,6 @@ public class Scene {
 		holder.addLight(new PointLight(new Vec3(0f,1f,0f),5,0.01f,5,135));
 		holder.addLight(new PointLight(new Vec3(1f,0f,0f),5,0.01f,5,180));
 		holder.addLight(new PointLight(new Vec3(0f,0f,1f),5,0.01f,5,225));
-
-
-
-
-
     }
 
 	public Camera getMainCamera() {
@@ -168,5 +181,23 @@ public class Scene {
 
 	public boolean isLightMoving() {
 		return isLightMoving;
+	}
+
+	public void fadeBackgroundColor(float dayTime, float dayTimeIncrease) {
+		float fadeSpeed = dayTimeIncrease/5;
+		if(dayTime>180) {
+			if(backgroundColor.x > originalbackgroundColor.x/100) backgroundColor.x *= (1-fadeSpeed);
+			if(backgroundColor.y > originalbackgroundColor.y/100) backgroundColor.y *= (1-fadeSpeed);
+			if(backgroundColor.z > originalbackgroundColor.z/100) backgroundColor.z *= (1-fadeSpeed);
+
+		} else {
+			if(backgroundColor.x < originalbackgroundColor.x) backgroundColor.x *= (1+fadeSpeed);
+			if(backgroundColor.y < originalbackgroundColor.y) backgroundColor.y *= (1+fadeSpeed);
+			if(backgroundColor.z < originalbackgroundColor.z) backgroundColor.z *= (1+fadeSpeed);
+		}
+	}
+
+	public Vec3 RgbToFloat(int r, int g, int b) {
+		return new Vec3(r/255f,g/255f,b/255f);
 	}
 }

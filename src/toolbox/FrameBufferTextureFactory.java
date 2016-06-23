@@ -1,7 +1,6 @@
 package toolbox;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.EXTTextureSRGB;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -12,8 +11,6 @@ import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT2;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 
 public class FrameBufferTextureFactory {
     public static int setupShadowMapTextureBuffer(int width, int height) {
@@ -42,10 +39,39 @@ public class FrameBufferTextureFactory {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glTexImage2D( GL_TEXTURE_2D, 0, EXTTextureSRGB.GL_SRGB_EXT, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
                 0, GL_RGB, GL_FLOAT, (ByteBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
+
         return texbuf;
+    }
+
+    public static int[] setupBloomTextureBuffer(int width, int height) {
+        int[] IDs = new int[2];
+
+        int hdrTextureID = glGenTextures();
+        glBindTexture( GL_TEXTURE_2D, hdrTextureID );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
+                0, GL_RGB, GL_FLOAT, (ByteBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        int brightObjectsTextureID = glGenTextures();
+        glBindTexture( GL_TEXTURE_2D, brightObjectsTextureID );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
+                0, GL_RGB, GL_FLOAT, (ByteBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        IDs[0] = hdrTextureID;
+        IDs[1] = brightObjectsTextureID;
+        return IDs;
     }
 
     public static int[] setupGeometryTextures(int width, int height) {

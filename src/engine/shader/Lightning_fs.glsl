@@ -1,4 +1,8 @@
 #version 150
+#extension GL_ARB_explicit_attrib_location : enable
+
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 #define AMBILIGHT_DAY 0.2
 #define AMBILIGHT_NIGHT 0.2
@@ -28,8 +32,6 @@ uniform vec3 uSunDirection;
 uniform vec3 uSunColor;
 uniform mat4 uSunProjection;
 uniform mat4 uSunView;
-
-out vec4 FragColor;
 
 float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples, float nDotL ) {
     float bias = max(0.01 * (1.0 - nDotL), 0.002);
@@ -164,10 +166,12 @@ void main(void) {
                 //shadowFactor = 1;
             //FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
             //vec3 lighting = (ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal;  //FIRST OPTION
-            vec3 sunLightingAndShadow = (shadowFactor * (sun_diffuse+sun_specular));
+            vec3 sunLightingAndShadow = (AMBILIGHT_DAY+shadowFactor * (sun_diffuse+sun_specular));
             vec3 LightSourceLighting = diffuseFinal+specularFinal;
-            vec3 finalLighting = sunLightingAndShadow + LightSourceLighting + ambient;  //SECOND OPTION
+            vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
             FragColor = vec4(finalLighting * color.rgb, 1.0);
         }
+        float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+        if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
     }
 }

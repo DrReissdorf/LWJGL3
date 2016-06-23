@@ -6,10 +6,9 @@ import engine.shader.MyShaderProgram;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
-import org.lwjgl.opengl.EXTTextureSRGB;
 import org.lwjgl.opengl.GL11;
 import toolbox.FrameBufferFactory;
-import toolbox.FrameBufferTextureFactory;
+import toolbox.TextureFactory;
 import toolbox.MeshCreator;
 import util.Mesh;
 import util.Texture;
@@ -32,6 +31,8 @@ public class Renderer {
     private MyShaderProgram shadowShader;
     private MyShaderProgram postProcessShader;
     private MyShaderProgram bloomShader;
+    private MyShaderProgram blurShader;
+
 
     private HolderSingleton holder;
 
@@ -45,12 +46,17 @@ public class Renderer {
     private int shadowTextureID;
     private Texture shadowMapTexture;
 
-    private int postProcessFrameBuffer;
+    private int postProcessFramebuffer;
     private Texture postProcessTexture;
 
-    private Texture bloomTexture;
-    private int bloomFrameBuffer;
+    private Texture hdrTexture;
+    private int tempBloomFrameBuffer;
     private Texture brightObjectsTexture;
+
+    private Texture afterLightingTexture;
+
+    private Texture[] pingPongTextures;
+    private int[] pingPongFrameBuffers;
 
     private Mesh screenQuad;
     private Texture gBufferPositionTex, gBufferNormalReflectTex, gBufferColorSpecTex, gBufferSpecTex;
@@ -69,6 +75,7 @@ public class Renderer {
         geometryShader      = new MyShaderProgram( shaderLocation + "Geometry_vs.glsl",  shaderLocation + "Geometry_fs.glsl" );
         lightningShader     = new MyShaderProgram( shaderLocation + "Lightning_vs.glsl",  shaderLocation + "Lightning_fs.glsl" );
         bloomShader         = new MyShaderProgram( shaderLocation + "Bloom_vs.glsl",  shaderLocation + "Bloom_fs.glsl" );
+        blurShader          = new MyShaderProgram( shaderLocation + "Blur_vs.glsl",  shaderLocation + "Blur_fs.glsl" );
 
         initShadows();
         initGeometryRendering();
@@ -87,8 +94,34 @@ public class Renderer {
         renderGeometry(mainCamera);
         renderShadowMap(mainCamera);
         renderLightning(dayTime, backgroundColor,mainCamera);
-        postProcess();
-        bloom();
+        blurBloom();
+        blendBloom();
+        postProcessing();
+
+    }
+
+    private void renderShadowMap(Camera mainCamera)  {
+        glViewport(0, 0, holder.getShadowMapSize(), holder.getShadowMapSize());
+        glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
+        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
+        glCullFace(GL_FRONT);
+
+        shadowShader.useProgram();
+
+        Sun sun = holder.getSun();
+
+        shadowShader.setUniform("uProjection", sun.getProjectionMatrix());
+        shadowShader.setUniform("uView", sun.getViewMatrix());
+
+        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
+            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
+                shadowShader.setUniform("uModel", gameObjectRoot.getTranformationMatrix());
+                gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
+            }
+        }
+
+        glCullFace(GL_BACK);
     }
 
     public void renderGeometry(Camera mainCamera) {
@@ -136,7 +169,7 @@ public class Renderer {
     }
 
     public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
-        glBindFramebuffer(GL_FRAMEBUFFER, postProcessFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, tempBloomFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
@@ -195,54 +228,53 @@ public class Renderer {
         screenQuad.draw();
     }
 
-
-
-    private Mat4 createNormalMat(Mat4 modelMatrix) {
-        return Mat4.inverse(modelMatrix).transpose();
-    }
-
-    private void renderShadowMap(Camera mainCamera)  {
-        glViewport(0, 0, holder.getShadowMapSize(), holder.getShadowMapSize());
-        glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-
-        glCullFace(GL_FRONT);
-
-        shadowShader.useProgram();
-
-        Sun sun = holder.getSun();
-
-        shadowShader.setUniform("uProjection", sun.getProjectionMatrix());
-        shadowShader.setUniform("uView", sun.getViewMatrix());
-
-        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
-                shadowShader.setUniform("uModel", gameObjectRoot.getTranformationMatrix());
-                gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
+    public void blurBloom() {
+        boolean first_iteration=true, horizontal = true;
+        int blurAmount = 10;
+        blurShader.useProgram();
+        for (int i = 0; i < blurAmount; i++) {
+            int textureIndex, frambufferIndex;
+            if(horizontal)  {
+                textureIndex = 1;
+                frambufferIndex=0;
             }
-        }
+            else {
+                textureIndex = 0;
+                frambufferIndex = 1;
+            }
+            horizontal = !horizontal;
 
-        glCullFace(GL_BACK);
+            glBindFramebuffer(GL_FRAMEBUFFER, pingPongFrameBuffers[frambufferIndex]);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(0, 0, windowWidth, windowHeight);
+
+            blurShader.setUniform("uHorizontal", textureIndex);
+
+            if(first_iteration) blurShader.setUniform("uTexture", brightObjectsTexture);
+            else blurShader.setUniform("uTexture", pingPongTextures[textureIndex]);
+            screenQuad.draw();
+            if (first_iteration) first_iteration = false;
+        }
     }
 
-    public void postProcess() {
-        glBindFramebuffer(GL_FRAMEBUFFER, bloomFrameBuffer);
+    public void blendBloom() {
+        glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+
+        bloomShader.useProgram();
+        bloomShader.setUniform("uTexture", afterLightingTexture);
+        bloomShader.setUniform("uPingPongTexture", pingPongTextures[0]);
+        screenQuad.draw();
+    }
+
+    public void postProcessing() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);
-        screenQuad.draw();
-    }
-
-    public void bloom() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, windowWidth, windowHeight);
-
-        bloomShader.useProgram();
-        bloomShader.setUniform("uTexture", bloomTexture);
-        bloomShader.setUniform("uBrightObjectsTexture", brightObjectsTexture);
         screenQuad.draw();
     }
 
@@ -255,8 +287,16 @@ public class Renderer {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
-        glBindTexture( GL_TEXTURE_2D, bloomTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, EXTTextureSRGB.GL_SRGB_EXT, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, pingPongTextures[0].getID() );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        glBindTexture( GL_TEXTURE_2D, pingPongTextures[1].getID() );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        glBindTexture( GL_TEXTURE_2D, afterLightingTexture.getID() );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferColorSpecTex.getID() );
@@ -276,43 +316,36 @@ public class Renderer {
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
-    public void onResize( int width, int height ) {
-        windowWidth  = width;
-        windowHeight = height;
-
-        resizeTextures();
-    }
-
     public void initShadows() {
-        shadowTextureID = FrameBufferTextureFactory.setupShadowMapTextureBuffer(holder.getShadowMapSize(), holder.getShadowMapSize());
-        //shadowTextureID = FrameBufferTextureFactory.newShadowTex(holder.getShadowMapSize(), holder.getShadowMapSize());
+        shadowTextureID = TextureFactory.setupShadowMapTextureBuffer(holder.getShadowMapSize(), holder.getShadowMapSize());
         shadowMapTexture = new Texture(shadowTextureID);
         shadowFrameBuffer = FrameBufferFactory.setupShadowFrameBuffer(shadowTextureID);
     }
 
     private void initPostProcessing() {
         // To make texture resizable we need to assign it to 4k first, it just scales down
-        int ID = FrameBufferTextureFactory.setupPostProcessTextureBuffer(windowWidth,windowHeight);
-        postProcessTexture = new Texture(ID);
-        postProcessFrameBuffer = FrameBufferFactory.setupPostProcessFrameBuffer(postProcessTexture.getID(), MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        postProcessTexture = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
+        postProcessFramebuffer = FrameBufferFactory.create1AttachmentFramebuffer(postProcessTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
     }
 
     private void initBloomProcessing() {
-        int[] textureIDs = FrameBufferTextureFactory.setupBloomTextureBuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        afterLightingTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
+        brightObjectsTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
+        tempBloomFrameBuffer = FrameBufferFactory.create2AttachmentFramebuffer(afterLightingTexture, brightObjectsTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
 
-        bloomTexture = new Texture(textureIDs[0]);
-        brightObjectsTexture = new Texture(textureIDs[1]);
-
-        bloomFrameBuffer = FrameBufferFactory.setupBloomFrameBuffer(bloomTexture.getID(),brightObjectsTexture.getID(),windowWidth,windowHeight);
+        pingPongFrameBuffers = new int[2];
+        pingPongTextures = new Texture[2];
+        pingPongTextures[0] = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        pingPongTextures[1] = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        pingPongFrameBuffers[0] = FrameBufferFactory.create1AttachmentFramebuffer(pingPongTextures[0], MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        pingPongFrameBuffers[1] = FrameBufferFactory.create1AttachmentFramebuffer(pingPongTextures[1], MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
     }
 
     private void initGeometryRendering() {
-        int[] gBufferTextureIDs = FrameBufferTextureFactory.setupGeometryTextures(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
-
-        gBufferColorSpecTex = new Texture(gBufferTextureIDs[0]);
-        gBufferNormalReflectTex = new Texture(gBufferTextureIDs[1]);
-        gBufferPositionTex = new Texture(gBufferTextureIDs[2]);
-        gBufferSpecTex = new Texture(gBufferTextureIDs[3]);
+        gBufferColorSpecTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        gBufferNormalReflectTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        gBufferPositionTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        gBufferSpecTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
 
         gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex, gBufferSpecTex);
     }
@@ -341,5 +374,9 @@ public class Renderer {
 
         int[] lightIndices = {holder.getLights().indexOf(closest), holder.getLights().indexOf(sndClosest)};
         return lightIndices;
+    }
+
+    private Mat4 createNormalMat(Mat4 modelMatrix) {
+        return Mat4.inverse(modelMatrix).transpose();
     }
 }

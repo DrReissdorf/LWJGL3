@@ -76,20 +76,43 @@ public class FrameBufferFactory {
         return framebuf;
     }
 
-    public static int setupBloomFrameBuffer(int hdrTextureID, int brightObjectsTextureID, int width, int height) {
+    public static int create1AttachmentFramebuffer(Texture texture, int width, int height) {
         int framebuf = glGenFramebuffers();
         glBindFramebuffer( GL_FRAMEBUFFER, framebuf );
+
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getID(), 0 );
+
+        int depthrenderbuffer = glGenRenderbuffers();
+        glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+        int err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if( err != GL_FRAMEBUFFER_COMPLETE) {
+            System.out.println("Frame buffer is not complete. Error: " + err);
+            System.exit(-1);
+        }
+
+        glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+        return framebuf;
+    }
+
+    public static int create2AttachmentFramebuffer(Texture tex1, Texture tex2, int width, int height) {
+        int gBufferID = glGenFramebuffers();
+        glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
 
         int attachment1 = GL_COLOR_ATTACHMENT0;
         int attachment2 = GL_COLOR_ATTACHMENT1;
 
-        glFramebufferTexture2D( GL_FRAMEBUFFER, attachment1, GL_TEXTURE_2D, hdrTextureID, 0 );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, attachment2, GL_TEXTURE_2D, brightObjectsTextureID, 0 );
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment1, GL_TEXTURE_2D, tex1.getID(), 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment2, GL_TEXTURE_2D, tex2.getID(), 0);
 
-        int[] attachments = { attachment1, attachment2};
+        int[] attachments = { attachment1, attachment2 };
         IntBuffer attribData = BufferUtils.createIntBuffer( attachments.length );
         attribData.put( attachments, 0, attachments.length );
         attribData.flip();
+
+        glDrawBuffers(attribData);
 
         int err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if( err != GL_FRAMEBUFFER_COMPLETE) {
@@ -102,8 +125,47 @@ public class FrameBufferFactory {
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
 
-        glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-        return framebuf;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        return gBufferID;
+    }
+
+    public static int setupBloomFrameBuffer(Texture hdrTex, Texture brightObjectsTex, int width, int height) {
+        int gBufferID = glGenFramebuffers();
+        glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
+
+        int attachment1 = GL_COLOR_ATTACHMENT0;
+        int attachment2 = GL_COLOR_ATTACHMENT1;
+
+
+        // - Position color buffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment1, GL_TEXTURE_2D, hdrTex.getID(), 0);
+
+        // - Normal color buffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment2, GL_TEXTURE_2D, brightObjectsTex.getID(), 0);
+
+
+        int[] attachments = { attachment1, attachment2 };
+        IntBuffer attribData = BufferUtils.createIntBuffer( attachments.length );
+        attribData.put( attachments, 0, attachments.length );
+        attribData.flip();
+
+        glDrawBuffers(attribData);
+
+        int err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if( err != GL_FRAMEBUFFER_COMPLETE) {
+            System.out.println("Frame buffer is not complete. Error: " + err);
+            System.exit(-1);
+        }
+
+        int depthrenderbuffer = glGenRenderbuffers();
+        glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        return gBufferID;
     }
 
     public static int setupShadowFrameBuffer(int shadowTextureID) {

@@ -121,7 +121,7 @@ public class Scene {
 		for(int x=-value ; x<=value ; x++) {
 			for (int z=-value; z<=value; z++) {
 				GameObjectRoot monkey = new GameObjectRoot(new Vec3(x*5,1,z*5));
-				monkey.setModel(holder.getModel(3));
+				monkey.setModel(holder.getModel(1));
 				holder.addGameObjectRoot(monkey);
 			}
 		}
@@ -134,19 +134,19 @@ public class Scene {
 		holder.addGameObjectRoot(lightGameObject);
 
 		/* LIGHT GAMEOBJECTS */
-		lightGameObject = new GameObjectRoot(new Vec3(-3,3,1));
+		lightGameObject = new GameObjectRoot(new Vec3(-3,2,1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(0));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
 		holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(3,3,1));
+		lightGameObject = new GameObjectRoot(new Vec3(3,2,1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(1));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
 		holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(0,3,-1));
+		lightGameObject = new GameObjectRoot(new Vec3(0,2,-1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(2));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
@@ -161,14 +161,14 @@ public class Scene {
 			}
 		}
 */
-		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
+		holder.setSun(new Sun(new Vec3(1.1f,1.1f,1.1f),1)); //new Vec3(1f,1f,1f)
 
-		holder.addLight(new PointLight(new Vec3(0f,1f,0f),5,0.01f,5,90));
-		holder.addLight(new PointLight(new Vec3(1f,0f,0f),5,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(0f,0f,1f),5,0.01f,5,270));
-		holder.addLight(new PointLight(new Vec3(0f,1f,0f),5,0.01f,5,135));
-		holder.addLight(new PointLight(new Vec3(1f,0f,0f),5,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(0f,0f,1f),5,0.01f,5,225));
+		holder.addLight(new PointLight(new Vec3(0f,2,0f),4,0.01f,5,90));
+		holder.addLight(new PointLight(new Vec3(5,0f,0f),4,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(0f,0f,15),4,0.01f,5,270));
+		holder.addLight(new PointLight(new Vec3(0f,2,0f),4,0.01f,5,135));
+		holder.addLight(new PointLight(new Vec3(2,0f,0f),4,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(0f,0f,10f),4,0.01f,5,225));
     }
 
 	public Camera getMainCamera() {

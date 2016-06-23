@@ -20,6 +20,8 @@ uniform float uReflectivity;
 uniform int uIsLight;
 uniform vec3 uLightColor;
 
+uniform mat4 uNormalMat;
+
 void main( void ) {
     if(uIsLight == 1) {
         gAlbedoSpec = vec4(uLightColor,1.0);
@@ -29,7 +31,8 @@ void main( void ) {
     }
 
 
-    gNormal = vec4(normalize(normal),1.0); // normals
+    //gNormal = vec4(normalize(normal),1.0); // normals
+    gNormal =  uNormalMat * vec4(normalize(normal),1.0);   // normals
     gPosition = vec4(position.xyz,uTextureScale); // Position
     gSpec = vec4(uShininess, uReflectivity, uIsLight, 1.0); // spec values (shini, reflect)
   /*  if(uHasTexture > 0.5) gl_FragData[0] = vec4(texture(uTexture,vTextureCoords*uTextureScale).rgb,uShininess); // Diffuse

@@ -230,7 +230,7 @@ public class Renderer {
 
     public void blurBloom() {
         boolean first_iteration=true, horizontal = true;
-        int blurAmount = 10;
+        int blurAmount = 6;
         blurShader.useProgram();
         for (int i = 0; i < blurAmount; i++) {
             int textureIndex, frambufferIndex;
@@ -346,7 +346,6 @@ public class Renderer {
         gBufferNormalReflectTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
         gBufferPositionTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
         gBufferSpecTex = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
-
         gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex, gBufferSpecTex);
     }
 

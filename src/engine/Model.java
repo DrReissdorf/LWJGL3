@@ -8,17 +8,13 @@ public class Model {
     private Mesh mesh;
     private ModelTexture modelTexture;
     private float textureScale;
-
-    public Model(Mesh mesh, ModelTexture modelTexture, float textureScale) {
-        this.mesh = mesh;
-        this.modelTexture = modelTexture;
-        this.textureScale = textureScale;
-    }
+    private float scale;
 
     public Model(Mesh mesh, ModelTexture modelTexture, float textureScale, float scale) {
         this.mesh = mesh;
         this.modelTexture = modelTexture;
         this.textureScale = textureScale;
+        this.scale = scale;
     }
 
     public Mesh getMesh() {
@@ -31,5 +27,13 @@ public class Model {
 
     public float getTextureScale() {
         return textureScale;
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 }

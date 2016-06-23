@@ -208,6 +208,7 @@ public class GameObjectRoot {
 
     public void setModel(Model model) {
         this.model = model;
+        this.scale = model.getScale();
     }
 
     public Light getLight() {

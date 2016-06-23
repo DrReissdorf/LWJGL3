@@ -67,7 +67,6 @@ public class Scene {
 		holder.addMesh(new ObjLoader().loadObj("Meshes/ground_plane.obj").get(0)); //4
 		holder.addMesh(new ObjLoader().loadObj("Meshes/monkey_scene.obj").get(0)); //5
 		holder.addMesh(new ObjLoader().loadObj("Meshes/cube.obj").get(0));//6
-		holder.addMesh(new ObjLoader().loadObj("Meshes/new_csie_b1.obj").get(0));//7
 	}
 
 	private void createTextures() {
@@ -88,14 +87,11 @@ public class Scene {
 	}
 
 	private void createModels() {
-		holder.addModel(new Model(holder.getMesh(6), null, 1)); // cube
-		holder.addModel(new Model(holder.getMesh(1), holder.getModelTexture(0), 1)); // dragon
-		holder.addModel(new Model(holder.getMesh(4), holder.getModelTexture(1), 5)); // ground_plane
-		holder.addModel(new Model(holder.getMesh(0), holder.getModelTexture(3), 1)); // monkey
+		holder.addModel(new Model(holder.getMesh(6), null, 1, 1)); // cube
+		holder.addModel(new Model(holder.getMesh(1), holder.getModelTexture(0), 1, 1)); // dragon
+		holder.addModel(new Model(holder.getMesh(4), holder.getModelTexture(1), 5, 1)); // ground_plane
+		holder.addModel(new Model(holder.getMesh(0), null, 1, 1)); // monkey
 		//holder.addModel(new Model(holder.getMesh(7), null, 1f,1f)); // complex house
-
-
-
 	}
 
 	private void createGameObjects() {
@@ -121,7 +117,7 @@ public class Scene {
 		for(int x=-value ; x<=value ; x++) {
 			for (int z=-value; z<=value; z++) {
 				GameObjectRoot monkey = new GameObjectRoot(new Vec3(x*5,1,z*5));
-				monkey.setModel(holder.getModel(1));
+				monkey.setModel(holder.getModel(3));
 				holder.addGameObjectRoot(monkey);
 			}
 		}

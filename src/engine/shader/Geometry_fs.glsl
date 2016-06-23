@@ -27,7 +27,7 @@ void main( void ) {
         gAlbedoSpec = vec4(uLightColor,1.0);
     } else {
         if(uHasTexture > 0.5) gAlbedoSpec = vec4(texture(uTexture,vTextureCoords*uTextureScale).rgb,1.0); // Diffuse
-        else gAlbedoSpec = vec4(1.0,1.0,1.0,1.0);
+        else gAlbedoSpec = vec4(0.5,0.5,0.5,1.0);
     }
 
 

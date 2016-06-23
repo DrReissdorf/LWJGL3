@@ -14,13 +14,18 @@ in vec2 vTextureCoords;
 uniform sampler2D uTexture;
 out vec4 FragColor;
 
-vec3 filmicToneMapping(vec3 color, float exposureBias) {
+vec3 filmicToneMapping(vec3 color) {
     vec3 newColor;
 
-    newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F) * exposureBias ;
+    newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F);
     newColor /= ((WHITE*(A*WHITE+C*B)+D*E)/(WHITE*(A*WHITE+B)+D*F)) - E/F;
 
     return newColor;
+}
+
+vec3 reinhardToneMapping(vec3 color) {
+    vec3 mapped = color / (color + vec3(1.0));
+    return mapped;
 }
 
 vec3 gammaCorrection(vec3 color, float gamma) {
@@ -30,8 +35,9 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 void main() {
     vec4 color = texture(uTexture,vTextureCoords);
 
-    color = vec4(filmicToneMapping(color.xyz,EXPOSURE_BIAS),1.0);
-    //color =  vec4(gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE),1.0);
+    color = vec4(filmicToneMapping(color.xyz*EXPOSURE_BIAS),1.0);
+    //color = vec4(reinhardToneMapping(color.xyz*EXPOSURE_BIAS),1.0);
+    color =  vec4(gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE),1.0);
 
     FragColor = color;
 }

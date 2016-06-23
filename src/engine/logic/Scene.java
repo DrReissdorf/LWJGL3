@@ -83,7 +83,7 @@ public class Scene {
 		holder.addModelTexture(new ModelTexture(holder.getTexture(2), 0.5f, 32));	// rock
 		holder.addModelTexture(new ModelTexture(holder.getTexture(3), 0.5f, 32));	// stone
 		holder.addModelTexture(new ModelTexture(holder.getTexture(3), 0.5f, 32));	// stone
-		holder.addModelTexture(new ModelTexture(null, 1f, 32));	// tree
+		holder.addModelTexture(new ModelTexture(null, 1f, 200));
 	}
 
 	private void createModels() {
@@ -130,23 +130,23 @@ public class Scene {
 		holder.addGameObjectRoot(lightGameObject);
 
 		/* LIGHT GAMEOBJECTS */
-		lightGameObject = new GameObjectRoot(new Vec3(-3,2,1));
+		lightGameObject = new GameObjectRoot(new Vec3(-3,4,1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(0));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
 		holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(3,2,1));
+		lightGameObject = new GameObjectRoot(new Vec3(3,4,1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(1));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
-		holder.addGameObjectRoot(lightGameObject);
+		//holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(0,2,-1));
+		lightGameObject = new GameObjectRoot(new Vec3(0,4,-1));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(2));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
-		holder.addGameObjectRoot(lightGameObject);
+		//holder.addGameObjectRoot(lightGameObject);
 	}
 
 	private void createLight() {
@@ -157,14 +157,14 @@ public class Scene {
 			}
 		}
 */
-		holder.setSun(new Sun(new Vec3(1.1f,1.1f,1.1f),1)); //new Vec3(1f,1f,1f)
+		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
 
-		holder.addLight(new PointLight(new Vec3(0f,2,0f),4,0.01f,5,90));
-		holder.addLight(new PointLight(new Vec3(5,0f,0f),4,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(0f,0f,15),4,0.01f,5,270));
-		holder.addLight(new PointLight(new Vec3(0f,2,0f),4,0.01f,5,135));
-		holder.addLight(new PointLight(new Vec3(2,0f,0f),4,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(0f,0f,10f),4,0.01f,5,225));
+		holder.addLight(new PointLight(new Vec3(1f,1f,1f),10,0.01f,5,90));
+		holder.addLight(new PointLight(new Vec3(3f,0f,0f),10,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(3f,3f,3f),10,0.01f,5,270));
+		holder.addLight(new PointLight(new Vec3(0f,2,0f),10,0.01f,5,135));
+		holder.addLight(new PointLight(new Vec3(2,0f,0f),10,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(0f,0f,10f),10,0.01f,5,225));
     }
 
 	public Camera getMainCamera() {

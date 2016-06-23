@@ -11,6 +11,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL21.GL_SRGB;
 import static org.lwjgl.opengl.GL30.*;
 
 public class TextureFactory {
@@ -41,6 +42,20 @@ public class TextureFactory {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
+                0, GL_RGB, GL_FLOAT, (ByteBuffer)null );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        return new Texture(texbuf);
+    }
+
+    public static Texture createSRGB_Texture(int width, int height) {
+        int texbuf = glGenTextures();
+        glBindTexture( GL_TEXTURE_2D, texbuf );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, width, height, //EXTTextureSRGB.GL_SRGB_EXT -> linear intensisity as pixel values
                 0, GL_RGB, GL_FLOAT, (ByteBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 

@@ -4,11 +4,11 @@
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
-#define AMBILIGHT_DAY 0.2
-#define AMBILIGHT_NIGHT 0.2
+#define AMBILIGHT_DAY 0.15
+#define AMBILIGHT_NIGHT 0.3
 #define PCF_FORSAMPLE 1
 
-#define LIGHTS 6
+#define LIGHTS 1
 uniform mat4[LIGHTS] uLightProjections;
 uniform mat4[LIGHTS] uLightViews;
 uniform vec3[LIGHTS] uLightPosArray;
@@ -89,15 +89,20 @@ float attenuationOfLight(vec3 vPos, vec3 lightPos, float lightStartDist, float l
     float distance = length(vPos-lightPos);
     float lightIntense;
 
-    if(distance <= lightStartDist) {   //max helligkeit
+  /*  if(distance <= lightStartDist) {   //max helligkeit
         lightIntense = 1;
     } else if(distance >= lightEndDist) {
         lightIntense = 0;
     } else {
         lightIntense = (lightEndDist-distance)/(lightEndDist-lightStartDist);
-    }
-
+    } */
+    lightIntense = (lightEndDist-distance)/(lightEndDist-lightStartDist);
     return lightIntense;
+}
+
+float attenuation2(vec3 vPos, vec3 lightPos) {
+    float distance = length(vPos-lightPos);
+    return 1.0 / (distance * distance);
 }
 
 void main(void) {
@@ -115,15 +120,12 @@ void main(void) {
             float spec_reflectivity = normal.a;
             float spec_shininess = color.a;
 
-
-            //vec3 ambient = AMBILIGHT * color.rgb ;
-
-               float ambient;
-               if(uDayTime > 180) {
-                   ambient = AMBILIGHT_NIGHT;
-               } else {
-                   ambient = AMBILIGHT_DAY;
-               }
+            vec3 ambient;
+            if(uDayTime > 180) {
+                ambient = AMBILIGHT_DAY * color.rgb;
+            } else {
+                ambient = AMBILIGHT_NIGHT * color.rgb;
+            }
 
             vec3 diffuseFinal = vec3(0);
             vec3 specularFinal = vec3(0);
@@ -154,7 +156,7 @@ void main(void) {
 
                     nDotl = dot(N,L);
                     attenuation = attenuationOfLight(position.xyz, uLightPosArray[i], 1 , uLightRangesArray[i] );
-
+                    //attenuation = attenuation2(position.xyz, uLightPosArray[i]);
                     diffuseFinal += calculateDiffuse(uLightColorArray[i],nDotl) * attenuation;
                     specularFinal += calculateSpecularBlinn(N, V, L, uLightColorArray[i], nDotl, specValues.g,specValues.r) * attenuation;
                 }
@@ -163,14 +165,14 @@ void main(void) {
 
             vec4 shadowCoords = uSunProjection * uSunView * vec4(position.xyz,1.0);
             float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(sun_N,sun_L)));
-                //shadowFactor = 1;
-            //FragColor = vec4((ambient+shadowFactor * (diffuseFinal+specularFinal)) * color.rgb, 1.0);
-            //vec3 lighting = (ambient+shadowFactor * (sun_diffuse+sun_specular)) + diffuseFinal+specularFinal;  //FIRST OPTION
-            vec3 sunLightingAndShadow = (AMBILIGHT_DAY+shadowFactor * (sun_diffuse+sun_specular));
-            vec3 LightSourceLighting = diffuseFinal+specularFinal;
+
+            vec3 sunLightingAndShadow = ((0.5+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb+ambient;
+            vec3 LightSourceLighting = (diffuseFinal+specularFinal)*color.rgb+ambient;
             vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
             FragColor = vec4(finalLighting * color.rgb, 1.0);
         }
+
+        /* RENDER BRIGHTOBJECTSTEXTURE */
         float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
         if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
     }

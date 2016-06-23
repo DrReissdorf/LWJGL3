@@ -17,6 +17,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL21.GL_SRGB;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
@@ -158,7 +159,7 @@ public class Renderer {
                         geometryShader.setUniform("uIsLight", 0);
                         geometryShader.setUniform("uHasTexture", 0.0f);
                         geometryShader.setUniform("uShininess", 100.0f);
-                        geometryShader.setUniform("uReflectivity", 1.0f);
+                        geometryShader.setUniform("uReflectivity", 0.5f);
                     }
                 }
 
@@ -230,7 +231,7 @@ public class Renderer {
 
     public void blurBloom() {
         boolean first_iteration=true, horizontal = true;
-        int blurAmount = 6;
+        int blurAmount = 10;
         blurShader.useProgram();
         for (int i = 0; i < blurAmount; i++) {
             int textureIndex, frambufferIndex;
@@ -280,7 +281,7 @@ public class Renderer {
 
     private void resizeTextures() {
         glBindTexture( GL_TEXTURE_2D, postProcessTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, brightObjectsTexture.getID() );
@@ -324,7 +325,7 @@ public class Renderer {
 
     private void initPostProcessing() {
         // To make texture resizable we need to assign it to 4k first, it just scales down
-        postProcessTexture = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
+        postProcessTexture = TextureFactory.createSRGB_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
         postProcessFramebuffer = FrameBufferFactory.create1AttachmentFramebuffer(postProcessTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
     }
 

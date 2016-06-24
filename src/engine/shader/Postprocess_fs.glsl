@@ -12,6 +12,7 @@
 
 in vec2 vTextureCoords;
 uniform sampler2D uTexture;
+uniform sampler2D uPingPongTexture; //blurred bright objects for bloom
 out vec4 FragColor;
 
 vec3 filmicToneMapping(vec3 color) {
@@ -21,6 +22,12 @@ vec3 filmicToneMapping(vec3 color) {
     newColor /= ((WHITE*(A*WHITE+C*B)+D*E)/(WHITE*(A*WHITE+B)+D*F)) - E/F;
 
     return newColor;
+}
+
+vec3 blendTextures(sampler2D colorTexture, sampler2D bloomTexture) {
+    vec3 color = texture(colorTexture,vTextureCoords).rgb;
+    vec3 bloomColor = texture(bloomTexture, vTextureCoords).rgb;
+    return color+bloomColor;
 }
 
 vec3 reinhardToneMapping(vec3 color) {
@@ -33,11 +40,11 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 }
 
 void main() {
-    vec4 color = texture(uTexture,vTextureCoords);
+    vec3 color = blendTextures(uTexture, uPingPongTexture);
 
-    color = vec4(filmicToneMapping(color.xyz*EXPOSURE_BIAS),1.0);
+    color = filmicToneMapping(color.xyz*EXPOSURE_BIAS);
     //color = vec4(reinhardToneMapping(color.xyz*EXPOSURE_BIAS),1.0);
-    color =  vec4(gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE),1.0);
+    color =  gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE);
 
-    FragColor = color;
+    FragColor = vec4(color,1.0);
 }

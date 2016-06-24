@@ -37,12 +37,6 @@ public class Renderer {
 
     private HolderSingleton holder;
 
-    private Vec3[] lightPositionArray;
-    private Vec3[] lightColorArray;
-    private float[] lightRangeArray;
-    private Mat4[] lightProjectionArray;
-    private Mat4[] lightViewArray;
-
     private int shadowFrameBuffer;
     private int shadowTextureID;
     private Texture shadowMapTexture;
@@ -75,7 +69,6 @@ public class Renderer {
         postProcessShader   = new MyShaderProgram( shaderLocation + "Postprocess_vs.glsl",  shaderLocation + "Postprocess_fs.glsl" );
         geometryShader      = new MyShaderProgram( shaderLocation + "Geometry_vs.glsl",  shaderLocation + "Geometry_fs.glsl" );
         lightningShader     = new MyShaderProgram( shaderLocation + "Lightning_vs.glsl",  shaderLocation + "Lightning_fs.glsl" );
-        bloomShader         = new MyShaderProgram( shaderLocation + "Bloom_vs.glsl",  shaderLocation + "Bloom_fs.glsl" );
         blurShader          = new MyShaderProgram( shaderLocation + "Blur_vs.glsl",  shaderLocation + "Blur_fs.glsl" );
 
         initShadows();
@@ -95,8 +88,7 @@ public class Renderer {
         renderGeometry(mainCamera);
         renderShadowMap(mainCamera);
         renderLightning(dayTime, backgroundColor,mainCamera);
-        blurBloom();
-        blendBloom();
+        //blurBloom();
         postProcessing();
 
     }
@@ -170,7 +162,7 @@ public class Renderer {
     }
 
     public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
-        glBindFramebuffer(GL_FRAMEBUFFER, tempBloomFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
@@ -236,17 +228,6 @@ public class Renderer {
         }
     }
 
-    public void blendBloom() {
-        glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, windowWidth, windowHeight);
-
-        bloomShader.useProgram();
-        bloomShader.setUniform("uTexture", afterLightingTexture);
-        bloomShader.setUniform("uPingPongTexture", pingPongTextures[0]);
-        screenQuad.draw();
-    }
-
     public void postProcessing() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -254,6 +235,7 @@ public class Renderer {
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);
+        postProcessShader.setUniform("uPingPongTexture", pingPongTextures[0]);
         screenQuad.draw();
     }
 
@@ -271,10 +253,6 @@ public class Renderer {
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, pingPongTextures[1].getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
-        glBindTexture( GL_TEXTURE_2D, 0 );
-
-        glBindTexture( GL_TEXTURE_2D, afterLightingTexture.getID() );
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -304,14 +282,11 @@ public class Renderer {
     private void initPostProcessing() {
         // To make texture resizable we need to assign it to 4k first, it just scales down
         postProcessTexture = TextureFactory.createSRGB_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
-        postProcessFramebuffer = FrameBufferFactory.create1AttachmentFramebuffer(postProcessTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
+        brightObjectsTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
+        postProcessFramebuffer = FrameBufferFactory.create2AttachmentFramebuffer(postProcessTexture, brightObjectsTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
     }
 
     private void initBloomProcessing() {
-        afterLightingTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
-        brightObjectsTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
-        tempBloomFrameBuffer = FrameBufferFactory.create2AttachmentFramebuffer(afterLightingTexture, brightObjectsTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
-
         pingPongFrameBuffers = new int[2];
         pingPongTextures = new Texture[2];
         pingPongTextures[0] = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);

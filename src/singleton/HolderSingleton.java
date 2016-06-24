@@ -10,7 +10,7 @@ import util.Texture;
 import java.util.ArrayList;
 
 public class HolderSingleton {
-    private int shadowMapSize = 2048;
+    private int shadowMapSize = 4096;
 
     private static HolderSingleton holderSingleton;
     private ArrayList<Light> lights;

@@ -185,22 +185,6 @@ public class Renderer {
             }
         }
 
-        if(lights.size() > 0) {
-            lightPositionArray = new Vec3[lights.size()];
-            lightColorArray = new Vec3[lights.size()];
-            lightRangeArray = new float[lights.size()];
-            lightViewArray = new Mat4[lights.size()];
-            lightProjectionArray = new Mat4[lights.size()];
-
-            for(int i=0 ; i<lights.size() ; i++) {
-                lightPositionArray[i] = lights.get(i).getPosition();
-                lightColorArray[i] = lights.get(i).getColor();
-                lightRangeArray[i] = lights.get(i).getRange();
-                lightViewArray[i] = lights.get(i).getViewMatrix();
-                lightProjectionArray[i] = lights.get(i).getProjectionMatrix();
-            }
-        }
-
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
         lightningShader.setUniform("cameraPos", mainCamera.getPosition());

@@ -54,7 +54,7 @@ struct DirectionalLight {
 uniform DirectionalLight uDirectionalLight;
 
 float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples, float nDotL ) {
-    float bias = max(0.01 * (1.0 - nDotL), 0.002);
+    float bias = max(0.02 * (1.0 - nDotL), 0.005);
     //float bias = 0.002;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;
@@ -150,7 +150,10 @@ void main(void) {
             vec3 diffuseFinal = vec3(0);
             vec3 specularFinal = vec3(0);
 
+            vec3 N = normalize(normal.xyz);
+
             /******************************************* SUN DIRECTIONAL LIGHT ******************************************/
+
             vec3 sun_diffuse = vec3(0);
             vec3 sun_specular = vec3(0);
             vec3 sun_pos = uSun.position+position.xyz;
@@ -160,7 +163,20 @@ void main(void) {
             float sun_nDotl = dot(sun_N, sun_L);
             sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
             sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSun.color, sun_nDotl, specValues.g,specValues.r);
+
             /*************************************************************************************************************/
+
+            /******************************************* DIRECTIONAL LIGHT ******************************************/
+         /*   vec3 sun_diffuse = vec3(0);
+            vec3 sun_specular = vec3(0);
+            vec3 sun_direction = normalize((uDirectionalLight.direction));
+
+            vec3 sun_V = normalize(cameraPos-position.xyz);
+            float sun_nDotl = dot(N, sun_direction);
+            sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
+            sun_specular += calculateSpecularBlinn(N, sun_V, sun_direction, uSun.color, sun_nDotl, specValues.g,specValues.r); */
+            /*************************************************************************************************************/
+
 
             /********************************************** NORMAL LIGHT *************************************************/
             float nDotl;
@@ -171,7 +187,6 @@ void main(void) {
 
                 if(length(L) < uLights[i].range) { // just calculate lightning for objects the light can actually reach
                     L = normalize(L);
-                    vec3 N = normalize(normal.xyz);
                     vec3 V = normalize(cameraPos - position.xyz);
 
                     nDotl = dot(N,L);
@@ -184,7 +199,7 @@ void main(void) {
             /*************************************************************************************************************/
 
             vec4 shadowCoords = uSun.projection * uSun.view * vec4(position.xyz,1.0);
-            float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(sun_N,sun_L)));
+            float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(N,sun_pos)));
 
             vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
             vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;

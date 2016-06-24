@@ -10,8 +10,7 @@ out vec4 position;
 out vec2 vTextureCoords;
 
 uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
+uniform mat4 uProjectionView;
 uniform mat4 uNormalMat;
 
 void main(void) {
@@ -22,5 +21,5 @@ void main(void) {
     normal = normalize( mat3(uNormalMat) * aNormal );
     position = worldPosition;
 
-    gl_Position = uProjection * uView * worldPosition;
+    gl_Position = uProjectionView * worldPosition;
 }

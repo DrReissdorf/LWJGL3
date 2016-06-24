@@ -30,7 +30,6 @@ void main( void ) {
         else gAlbedoSpec = vec4(0.5,0.5,0.5,1.0);
     }
 
-
     //gNormal = vec4(normalize(normal),1.0); // normals
     gNormal =  uNormalMat * vec4(normalize(normal),1.0);   // normals
     gPosition = vec4(position.xyz,uTextureScale); // Position

@@ -8,6 +8,7 @@ public class Camera extends GameObjectRoot {
     private long lastTime;
     private boolean isFreeFlight = true;
     private float moveSpeed;
+    private final boolean printPosition = false;
 
     public Camera(Vec3 position, float fov, int windowWidth, int windowHeight, float near, float far, float moveSpeed) {
         super(position);
@@ -29,9 +30,11 @@ public class Camera extends GameObjectRoot {
         Vec3 direction = getDirection();
         Vec3 up = getUp();
 
-        if((System.currentTimeMillis()-lastTime) > 1000) {
-            System.out.println("Main Camera: Position - x:"+position.x+" y:"+position.y+" z:"+position.z+"  Rotation - x:"+getRotX()+" y:"+getRotY());
-            lastTime = System.currentTimeMillis();
+        if(printPosition) {
+            if((System.currentTimeMillis()-lastTime) > 1000) {
+                System.out.println("Main Camera: Position - x:"+position.x+" y:"+position.y+" z:"+position.z+"  Rotation - x:"+getRotX()+" y:"+getRotY());
+                lastTime = System.currentTimeMillis();
+            }
         }
 
         Vec3 temp = new Vec3(position.x+direction.x, position.y+direction.y, position.z+direction.z);

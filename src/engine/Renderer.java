@@ -25,7 +25,7 @@ public class Renderer {
     //private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
     private final int MAX_TEX_RESOLUTION_WIDTH = 1280;
     private final int MAX_TEX_RESOLUTION_HEIGHT = 720;
-    private final float renderDistance = 100;
+    private final float renderDistance = 50;
 
     private final String shaderLocation = "src/engine/shader/";
 
@@ -34,7 +34,6 @@ public class Renderer {
     private MyShaderProgram shadowShader;
     private MyShaderProgram postProcessShader;
     private MyShaderProgram blurShader;
-
 
     private HolderSingleton holder;
 
@@ -101,12 +100,11 @@ public class Renderer {
 
         Sun sun = holder.getSun();
 
-        shadowShader.setUniform("uProjection", sun.getProjectionMatrix());
-        shadowShader.setUniform("uView", sun.getViewMatrix());
+        Mat4 mv = Mat4.mul(sun.getProjectionMatrix(), sun.getViewMatrix());
 
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
             if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
-                shadowShader.setUniform("uModel", gameObjectRoot.getTranformationMatrix());
+                shadowShader.setUniform("uProjectionViewModel", Mat4.mul(mv,gameObjectRoot.getTranformationMatrix()));
                 gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
             }
         }
@@ -120,8 +118,7 @@ public class Renderer {
         glCullFace(GL_BACK);
 
         geometryShader.useProgram();
-        geometryShader.setUniform("uView",       mainCamera.getViewMatrix());
-        geometryShader.setUniform("uProjection", mainCamera.getProjectionMatrix());
+        geometryShader.setUniform("uProjectionView", Mat4.mul(mainCamera.getProjectionMatrix(), mainCamera.getViewMatrix()));
 
         for(GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
             if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition())) < renderDistance && gameObjectRoot.getModel()!=null) {

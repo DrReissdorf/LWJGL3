@@ -32,7 +32,8 @@ public class InputHandler {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    public void updateInput(float deltaTime) {
+    public void updateInput() {
+        float deltaTime = 0.05f;
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
             if(!is_L_pressed) {
                 is_L_pressed = true;

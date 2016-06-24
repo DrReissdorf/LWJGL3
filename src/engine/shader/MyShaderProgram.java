@@ -253,6 +253,8 @@ public class MyShaderProgram {
         setUniform(uniformName + ".position", sun.getPosition());
         setUniform(uniformName + ".projection", sun.getProjectionMatrix());
         setUniform(uniformName + ".view", sun.getViewMatrix());
+        setUniform(uniformName + ".projectionView", Mat4.mul(sun.getProjectionMatrix(),sun.getViewMatrix()));
+
     }
 
     public void setUniform(String uniformName, DirectionalLight directionalLight) {

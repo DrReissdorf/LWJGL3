@@ -87,7 +87,7 @@ public class Scene {
 	}
 
 	private void createModels() {
-		holder.addModel(new Model(holder.getMesh(6), null, 1, 1)); // cube
+		holder.addModel(new Model(holder.getMesh(6), null, 1, 2)); // cube
 		holder.addModel(new Model(holder.getMesh(1), holder.getModelTexture(0), 1, 1)); // dragon
 		holder.addModel(new Model(holder.getMesh(4), holder.getModelTexture(1), 5, 1)); // ground_plane
 		holder.addModel(new Model(holder.getMesh(0), null, 1, 1)); // monkey
@@ -95,11 +95,11 @@ public class Scene {
 	}
 
 	private void createGameObjects() {
-		//GameObjectRoot dragon = new GameObjectRoot(new Vec3(0,0,0));
-		//dragon.setModel(holder.getModel(1));
-		//holder.addGameObjectRoot(dragon);
+	//	GameObjectRoot monkey = new GameObjectRoot(new Vec3(0,0,0));
+	//	monkey.setModel(holder.getModel(3));
+	//	holder.addGameObjectRoot(monkey);
 
-		GameObjectRoot cube = new GameObjectRoot(new Vec3(2,0.5f,0));
+		GameObjectRoot cube = new GameObjectRoot(new Vec3(0,1f,0));
 		cube.setModel(holder.getModel(0));
 		holder.addGameObjectRoot(cube);
 
@@ -113,14 +113,14 @@ public class Scene {
 			}
 		}
 
-		value = 1;
+		/*value = 1;
 		for(int x=-value ; x<=value ; x++) {
 			for (int z=-value; z<=value; z++) {
 				GameObjectRoot monkey = new GameObjectRoot(new Vec3(x*5,1,z*5));
 				monkey.setModel(holder.getModel(3));
 				holder.addGameObjectRoot(monkey);
 			}
-		}
+		}*/
 
 		/* SUN */
 		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-1));

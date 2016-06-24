@@ -42,8 +42,8 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 void main() {
     vec3 color = blendTextures(uTexture, uPingPongTexture);
 
-    color = filmicToneMapping(color.xyz*EXPOSURE_BIAS);
-    //color = vec4(reinhardToneMapping(color.xyz*EXPOSURE_BIAS),1.0);
+    //color = filmicToneMapping(color.xyz*EXPOSURE_BIAS);
+    color = reinhardToneMapping(color.xyz*EXPOSURE_BIAS);
     color =  gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE);
 
     FragColor = vec4(color,1.0);

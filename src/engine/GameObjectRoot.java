@@ -209,6 +209,7 @@ public class GameObjectRoot {
     public void setModel(Model model) {
         this.model = model;
         this.scale = model.getScale();
+        updateTranformationMatrix();
     }
 
     public Light getLight() {

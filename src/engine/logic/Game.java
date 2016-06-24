@@ -120,7 +120,7 @@ public class Game {
 
 
 
-            inputHandler.updateInput(deltaTime);
+            //inputHandler.updateInput(deltaTime);
             scene.draw(deltaTime);
             limitFps(30);
 
@@ -185,8 +185,9 @@ public class Game {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         new Game().run();
     }
+
 
 }

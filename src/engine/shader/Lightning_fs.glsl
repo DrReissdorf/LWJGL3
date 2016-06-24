@@ -24,16 +24,12 @@ uniform mat4 uView;
 
 in vec2 vTextureCoords;
 
-uniform vec3 uSunDirection;
-uniform vec3 uSunColor;
-uniform mat4 uSunProjection;
-uniform mat4 uSunView;
-
 struct Sun {
     vec3 color;
     vec3 position;
     mat4 projection;
     mat4 view;
+    mat4 projectionView;
 };
 uniform Sun uSun;
 
@@ -53,7 +49,7 @@ struct DirectionalLight {
 };
 uniform DirectionalLight uDirectionalLight;
 
-float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSamples, float nDotL ) {
+float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float forSamples, in float nDotL ) {
     float bias = max(0.02 * (1.0 - nDotL), 0.005);
     //float bias = 0.002;
 
@@ -89,7 +85,7 @@ float shadows_PCF(sampler2DShadow shadowmap, vec4 shadowmapCoord, float forSampl
     return shadowmap_factor/numberOfSamples;
 }
 
-vec3 calculateSpecularBlinn(vec3 N, vec3 V, vec3 L, vec3 lightColor, float nDotl, float reflect, float shine) {
+vec3 calculateSpecularBlinn(in vec3 N, in vec3 V, in vec3 L, in vec3 lightColor, in float nDotl, in float reflect, in float shine) {
     vec3 specular = vec3(0);
 
     if(nDotl > 0) {
@@ -101,11 +97,11 @@ vec3 calculateSpecularBlinn(vec3 N, vec3 V, vec3 L, vec3 lightColor, float nDotl
     return specular;
 }
 
-vec3 calculateDiffuse(vec3 lightColor, float nDotl) {
+vec3 calculateDiffuse(in vec3 lightColor, in float nDotl) {
     return lightColor * vec3(max(nDotl, 0.0)) ;
 }
 
-float attenuationOfLight(vec3 vPos, vec3 lightPos, float lightStartDist, float lightEndDist) {
+float attenuationOfLight(in vec3 vPos, in vec3 lightPos, in float lightStartDist, in float lightEndDist) {
     float distance = length(vPos-lightPos);
     float lightIntense;
 
@@ -120,7 +116,7 @@ float attenuationOfLight(vec3 vPos, vec3 lightPos, float lightStartDist, float l
     return lightIntense;
 }
 
-float attenuation2(vec3 vPos, vec3 lightPos) {
+float attenuation2(in vec3 vPos, in vec3 lightPos) {
     float distance = length(vPos-lightPos);
     return 1.0 / (distance * distance);
 }
@@ -134,7 +130,7 @@ void main(void) {
     if(normal.x==0.0 && normal.y==0.0 && normal.z==0.0) {
         FragColor = vec4(backgroundColor,1.0);
     } else {
-        if(specValues.z == 1) { //light detected
+        if(specValues.z == 1) { //light detected, color object in light color
             FragColor = color;
         } else {
             float spec_reflectivity = normal.a;
@@ -198,7 +194,7 @@ void main(void) {
             }
             /*************************************************************************************************************/
 
-            vec4 shadowCoords = uSun.projection * uSun.view * vec4(position.xyz,1.0);
+            vec4 shadowCoords = uSun.projectionView * vec4(position.xyz,1.0);
             float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(N,sun_pos)));
 
             vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;

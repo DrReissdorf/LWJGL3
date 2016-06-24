@@ -1,6 +1,7 @@
 package engine.logic;
 
 import engine.*;
+import engine.Light.DirectionalLight;
 import engine.Light.Sun;
 import engine.Light.Light;
 import engine.Light.PointLight;
@@ -149,14 +150,8 @@ public class Scene {
 	}
 
 	private void createLight() {
-/*
-		for(int x=-3 ; x<=3 ; x++) {
-			for (int z=-3; z<=3; z++) {
-				holder.addLight(new Light(new Vec3(x*3, 5, z*3), new Vec3(1f, 1f, 1f), 100f, 0.01f, 5));
-			}
-		}
-*/
 		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
+		holder.setDirectionalLight(new DirectionalLight(new Vec3(1f,1f,1f),new Vec3(0,1,0),1));
 
 		holder.addLight(new PointLight(new Vec3(1f,1f,1f),10,0.01f,5,90));
 		holder.addLight(new PointLight(new Vec3(3f,0f,0f),10,0.01f,5,180));

@@ -6,13 +6,20 @@ import static org.lwjgl.opengl.GL20.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.sun.javafx.geom.Matrix3f;
+import engine.Light.DirectionalLight;
+import engine.Light.Light;
+import engine.Light.Sun;
 import math.Mat3;
 import math.Mat4;
 import math.Vec2;
 import math.Vec3;
 import math.Vec4;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.ovr.OVRMatrix4f;
 import util.FileIO;
 import util.Texture;
 
@@ -239,5 +246,32 @@ public class MyShaderProgram {
 
     public void setUniform(String uniformName, float[] floats) {
         glUniform1fv( this.getUniformLocation(uniformName), floats);
+    }
+
+    public void setUniform(String uniformName, Sun sun) {
+        setUniform(uniformName + ".color", sun.getColor() );
+        setUniform(uniformName + ".position", sun.getPosition());
+        setUniform(uniformName + ".projection", sun.getProjectionMatrix());
+        setUniform(uniformName + ".view", sun.getViewMatrix());
+    }
+
+    public void setUniform(String uniformName, DirectionalLight directionalLight) {
+        setUniform(uniformName + ".color", directionalLight.getColor() );
+        setUniform(uniformName + ".direction", directionalLight.getDirection());
+        setUniform(uniformName + ".intensity", directionalLight.getIntensity());
+    }
+
+    public void setUniform(String uniformName, Light light) {
+        setUniform(uniformName + ".color", light.getColor() );
+        setUniform(uniformName + ".position", light.getPosition());
+        setUniform(uniformName + ".range", light.getRange());
+        setUniform(uniformName + ".projection", light.getProjectionMatrix());
+        setUniform(uniformName + ".view", light.getViewMatrix());
+    }
+
+    public void setUniform(String uniformName, ArrayList<Light> lights) {
+        for(int i=0 ; i<lights.size() ; i++) {
+            setUniform(uniformName + "[" + i + "]", lights.get(i));
+        }
     }
 }

@@ -1,6 +1,7 @@
 package singleton;
 
 import engine.*;
+import engine.Light.DirectionalLight;
 import engine.Light.Light;
 import engine.Light.Sun;
 import util.Mesh;
@@ -20,6 +21,7 @@ public class HolderSingleton {
     private ArrayList<ModelTexture> modelTextures;
     private ArrayList<Texture> textures;
     private Sun sun;
+private DirectionalLight directionalLight;
 
     private HolderSingleton() {
         lights = new ArrayList<>();
@@ -138,5 +140,13 @@ public class HolderSingleton {
 
     public Sun getSun() {
         return sun;
+    }
+
+    public DirectionalLight getDirectionalLight() {
+        return directionalLight;
+    }
+
+    public void setDirectionalLight(DirectionalLight directionalLight) {
+        this.directionalLight = directionalLight;
     }
 }

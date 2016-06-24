@@ -212,17 +212,11 @@ public class Renderer {
         lightningShader.setUniform("uColorSpecTex", gBufferColorSpecTex);
         lightningShader.setUniform("uSpecTex", gBufferSpecTex);
 
-        lightningShader.setUniform("uLightProjections", lightProjectionArray);
-        lightningShader.setUniform("uLightViews",       lightViewArray);
-        lightningShader.setUniform("uLightPosArray",    lightPositionArray);
-        lightningShader.setUniform("uLightColorArray",  lightColorArray);
-        lightningShader.setUniform("uLightRangesArray", lightRangeArray);
+        lightningShader.setUniform("uLights",lights);
 
         Sun sun = holder.getSun();
-        lightningShader.setUniform("uSunProjection", sun.getProjectionMatrix());
-        lightningShader.setUniform("uSunView", sun.getViewMatrix());
-        lightningShader.setUniform("uSunDirection", sun.getPosition());
-        lightningShader.setUniform("uSunColor", sun.getColor());
+        lightningShader.setUniform("uSun",sun);
+        lightningShader.setUniform("uDirectionalLight",holder.getDirectionalLight());
 
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 

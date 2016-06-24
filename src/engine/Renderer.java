@@ -21,8 +21,10 @@ import static org.lwjgl.opengl.GL21.GL_SRGB;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
-    private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
-    private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
+  //  private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
+    //private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
+    private final int MAX_TEX_RESOLUTION_WIDTH = 1280;
+    private final int MAX_TEX_RESOLUTION_HEIGHT = 720;
     private final float renderDistance = 100;
 
     private final String shaderLocation = "src/engine/shader/";
@@ -31,7 +33,6 @@ public class Renderer {
     private MyShaderProgram lightningShader;
     private MyShaderProgram shadowShader;
     private MyShaderProgram postProcessShader;
-    private MyShaderProgram bloomShader;
     private MyShaderProgram blurShader;
 
 
@@ -44,11 +45,7 @@ public class Renderer {
     private int postProcessFramebuffer;
     private Texture postProcessTexture;
 
-    private Texture hdrTexture;
-    private int tempBloomFrameBuffer;
     private Texture brightObjectsTexture;
-
-    private Texture afterLightingTexture;
 
     private Texture[] pingPongTextures;
     private int[] pingPongFrameBuffers;
@@ -75,7 +72,7 @@ public class Renderer {
         initGeometryRendering();
         initPostProcessing();
         initBloomProcessing();
-        resizeTextures();
+        //resizeTextures();
 
         screenQuad = new MeshCreator().createQuad();
 

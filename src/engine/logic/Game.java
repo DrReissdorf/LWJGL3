@@ -12,8 +12,8 @@ import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Game {
-    private int WIDTH = 1440;
-    private int HEIGHT = 900;
+    private int WIDTH = 1280;
+    private int HEIGHT = 720;
     private Scene scene;
     private InputHandler inputHandler;
 
@@ -57,8 +57,10 @@ public class Game {
 
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
-        if ( window == NULL )
-            throw new RuntimeException("Failed to create the GLFW window");
+        if ( window == NULL ) throw new RuntimeException("Failed to create the GLFW window");
+
+        glfwSetWindowSizeLimits(window,0,0,9999,9999);
+
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
@@ -120,7 +122,7 @@ public class Game {
 
             inputHandler.updateInput(deltaTime);
             scene.draw(deltaTime);
-            limitFps(120);
+            limitFps(30);
 
             fps++;
             tempTime = time-lastFpsNanoTime;

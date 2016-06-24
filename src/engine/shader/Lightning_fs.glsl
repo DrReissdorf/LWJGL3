@@ -186,7 +186,7 @@ void main(void) {
             vec4 shadowCoords = uSun.projection * uSun.view * vec4(position.xyz,1.0);
             float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(sun_N,sun_L)));
 
-            vec3 sunLightingAndShadow = (((0.5+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
+            vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
             vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;
             vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
             FragColor = vec4(finalLighting * color.rgb, 1.0);

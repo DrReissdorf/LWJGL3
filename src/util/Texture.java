@@ -1,24 +1,27 @@
 
 package util;
 
+import de.matthiasmann.twl.utils.PNGDecoder;
+import org.lwjgl.BufferUtils;
 
-//import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.*;
 import static org.lwjgl.opengl.EXTABGR.GL_ABGR_EXT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.opengl.GL30.GL_R8;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load;
+import static org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 
@@ -35,8 +38,9 @@ public class Texture
 	public Texture( String filename )
 	{
 		if( !TextureIDs.containsKey(filename) )
-			loadTexture( filename );
-		
+		//	loadTexture( filename );
+			lol(filename);
+		//load(filename);
 		this.textureID = TextureIDs.get( filename );
 	}
 	
@@ -52,7 +56,78 @@ public class Texture
 		return this.textureID;
 	}
 	
-	
+	private static void lol(String fileName) {
+		String path = FileIO.pathOf( fileName );
+
+		IntBuffer w = BufferUtils.createIntBuffer(1);
+		IntBuffer h = BufferUtils.createIntBuffer(1);
+		IntBuffer comp = BufferUtils.createIntBuffer(1);
+
+		stbi_set_flip_vertically_on_load(1);
+		ByteBuffer image = stbi_load(path, w, h, comp, 4);
+		if (image == null) {
+			throw new RuntimeException("Failed to load a texture file!"
+					+ System.lineSeparator() + stbi_failure_reason());
+		}
+
+
+		TextureIDs.put( fileName, 0 );
+
+		int width = w.get();
+		int height = h.get();
+
+		int textureID = glGenTextures();
+		TextureIDs.put( fileName, textureID );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, textureID );
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+		glGenerateMipmap( GL_TEXTURE_2D );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+	}
+
+	private static void load( String filename) {
+		try{
+			String path = FileIO.pathOf( filename );
+
+			InputStream in;
+
+			in = new FileInputStream(path);
+			PNGDecoder decoder = new PNGDecoder(in);
+
+			System.out.println("width="+decoder.getWidth());
+			System.out.println("height="+decoder.getHeight());
+
+			ByteBuffer buf = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
+			decoder.decode(buf, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
+			buf.flip();
+
+			int textureID = glGenTextures();
+			TextureIDs.put( filename, textureID );
+
+			int internalFormat = GL_RGB;
+			int format         = GL_RGB;
+
+			glActiveTexture( GL_TEXTURE0 );
+			glBindTexture( GL_TEXTURE_2D, textureID );
+
+			glTexImage2D( GL_TEXTURE_2D, 0, internalFormat, decoder.getWidth(), decoder.getHeight(), 0, format, GL_UNSIGNED_BYTE, buf );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+			//glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Config.getFloat("TextureAnisotropy") );
+			glGenerateMipmap( GL_TEXTURE_2D );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private static void loadTexture( String filename )
 	{
 		try

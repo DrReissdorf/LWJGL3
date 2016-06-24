@@ -74,7 +74,6 @@ public class Scene {
 		holder.addTexture(new Texture("Textures/WoodPlanks.jpg"));//1
 		holder.addTexture(new Texture("Textures/rock.png"));  //2
 		holder.addTexture(new Texture("Textures/Stone.jpg"));  //3
-		holder.addTexture(new Texture("Textures/Green.jpg")); //4
 	}
 
 	private void createModelTextures() {

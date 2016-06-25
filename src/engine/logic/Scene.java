@@ -22,7 +22,7 @@ public class Scene {
 	private float mainCameraFar    = 500.0f;
 
 	private float dayTime = 40;
-	private float dayTimeIncrease = 0.1f; //0.005f;
+	private float dayTimeIncrease = 0.2f; //0.005f;
 	private Vec3 backgroundColor = RgbToFloat(54,155,255);
 	private Vec3 originalbackgroundColor = RgbToFloat(54,155,255);
 
@@ -87,7 +87,7 @@ public class Scene {
 	}
 
 	private void createModels() {
-		holder.addModel(new Model(holder.getMesh(6), null, 1, 2)); // cube
+		holder.addModel(new Model(holder.getMesh(6), null, 1, 1)); // cube
 		holder.addModel(new Model(holder.getMesh(1), holder.getModelTexture(0), 1, 1)); // dragon
 		holder.addModel(new Model(holder.getMesh(4), holder.getModelTexture(1), 5, 1)); // ground_plane
 		holder.addModel(new Model(holder.getMesh(0), null, 1, 1)); // monkey
@@ -95,11 +95,11 @@ public class Scene {
 	}
 
 	private void createGameObjects() {
-	//	GameObjectRoot monkey = new GameObjectRoot(new Vec3(0,0,0));
-	//	monkey.setModel(holder.getModel(3));
-	//	holder.addGameObjectRoot(monkey);
+		GameObjectRoot monkey = new GameObjectRoot(new Vec3(-2,1,2));
+		monkey.setModel(holder.getModel(3));
+		holder.addGameObjectRoot(monkey);
 
-		GameObjectRoot cube = new GameObjectRoot(new Vec3(0,1f,0));
+		GameObjectRoot cube = new GameObjectRoot(new Vec3(0,0.5f,0));
 		cube.setModel(holder.getModel(0));
 		holder.addGameObjectRoot(cube);
 
@@ -123,7 +123,7 @@ public class Scene {
 		}*/
 
 		/* SUN */
-		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-1));
+		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-3));
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setSun(holder.getSun());
 		lightGameObject.getSun().setGameObjectRoot(lightGameObject);
@@ -153,12 +153,12 @@ public class Scene {
 		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
 		holder.setDirectionalLight(new DirectionalLight(new Vec3(1f,1f,1f),new Vec3(0,1,0),1));
 
-		holder.addLight(new PointLight(new Vec3(1f,1f,1f),10,0.01f,5,90));
-		holder.addLight(new PointLight(new Vec3(3f,0f,0f),10,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(3f,3f,3f),10,0.01f,5,270));
-		holder.addLight(new PointLight(new Vec3(0f,2,0f),10,0.01f,5,135));
-		holder.addLight(new PointLight(new Vec3(2,0f,0f),10,0.01f,5,180));
-		holder.addLight(new PointLight(new Vec3(0f,0f,10f),10,0.01f,5,225));
+		holder.addLight(new PointLight(RgbToFloat(156,42,0),5,15,0.01f,5,90));
+		holder.addLight(new PointLight(new Vec3(3f,0f,0f),1,10,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(3f,3f,3f),1,10,0.01f,5,270));
+		holder.addLight(new PointLight(new Vec3(0f,2,0f),1,10,0.01f,5,135));
+		holder.addLight(new PointLight(new Vec3(2,0f,0f),1,10,0.01f,5,180));
+		holder.addLight(new PointLight(new Vec3(0f,0f,10f),1,10,0.01f,5,225));
     }
 
 	public Camera getMainCamera() {

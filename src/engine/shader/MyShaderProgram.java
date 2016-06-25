@@ -12,6 +12,7 @@ import java.util.HashMap;
 import com.sun.javafx.geom.Matrix3f;
 import engine.Light.DirectionalLight;
 import engine.Light.Light;
+import engine.Light.PointLight;
 import engine.Light.Sun;
 import math.Mat3;
 import math.Mat4;
@@ -269,6 +270,7 @@ public class MyShaderProgram {
         setUniform(uniformName + ".range", light.getRange());
         setUniform(uniformName + ".projection", light.getProjectionMatrix());
         setUniform(uniformName + ".view", light.getViewMatrix());
+        setUniform(uniformName + ".intensity", light.getIntensity());
     }
 
     public void setUniform(String uniformName, ArrayList<Light> lights) {

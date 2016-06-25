@@ -85,7 +85,7 @@ public class Renderer {
         renderShadowMap(mainCamera);
         renderLightning(dayTime, backgroundColor,mainCamera);
         //blurBloom();
-        postProcessing();
+        //postProcessing();
 
     }
 
@@ -156,7 +156,7 @@ public class Renderer {
     }
 
     public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
-        glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
@@ -174,6 +174,7 @@ public class Renderer {
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
         lightningShader.setUniform("cameraPos", mainCamera.getPosition());
+        lightningShader.setUniform("uPingPongTexture", pingPongTextures[0]);
 
         lightningShader.setUniform("uDayTime", dayTime);
 

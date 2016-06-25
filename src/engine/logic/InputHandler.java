@@ -18,7 +18,7 @@ public class InputHandler {
     private Camera mainCamera;
     private Scene scene;
 
-    private final float movementMulti = 4;
+    private final float movementMulti = 0.05f;
 
     private float lastFrameMouseX=0, lastFrameMouseY=0;
     private DoubleBuffer b1 = BufferUtils.createDoubleBuffer(1);
@@ -33,7 +33,6 @@ public class InputHandler {
     }
 
     public void updateInput() {
-        float deltaTime = 0.05f;
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
             if(!is_L_pressed) {
                 is_L_pressed = true;
@@ -59,22 +58,22 @@ public class InputHandler {
         }
 
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            mainCamera.moveForward(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveForward(mainCamera.getMoveSpeed()*movementMulti);
         }
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            mainCamera.moveLeft(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveLeft(mainCamera.getMoveSpeed()*movementMulti);
         }
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            mainCamera.moveBackward(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveBackward(mainCamera.getMoveSpeed()*movementMulti);
         }
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            mainCamera.moveRight(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveRight(mainCamera.getMoveSpeed()*movementMulti);
         }
         if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            mainCamera.moveUp(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveUp(mainCamera.getMoveSpeed()*movementMulti);
         }
         if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            mainCamera.moveDown(mainCamera.getMoveSpeed()*deltaTime*movementMulti);
+            mainCamera.moveDown(mainCamera.getMoveSpeed()*movementMulti);
         }
 
         glfwGetCursorPos(window, b1, b2);

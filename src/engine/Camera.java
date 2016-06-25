@@ -60,7 +60,7 @@ public class Camera extends GameObjectRoot {
         Vec3 position = getPosition();
 
         isFreeFlight = freeFlight;
-        setPosition(new Vec3(position.x, 0.5f, position.z));
+        setPosition(new Vec3(position.x, 2f, position.z));
         System.out.println("Main Camera: Set freeflight-mode to "+freeFlight);
     }
 }

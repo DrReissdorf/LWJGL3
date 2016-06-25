@@ -9,12 +9,27 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL21.GL_SRGB;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 
 public class TextureFactory {
+    public static int generateCubeTexture(int width, int height) {
+        int textureID = glGenTextures();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null );
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return textureID;
+    }
+
     public static int setupShadowMapTextureBuffer(int width, int height) {
         int shadowTextureID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, shadowTextureID);

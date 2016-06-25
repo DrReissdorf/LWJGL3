@@ -5,8 +5,12 @@ layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
 #define AMBILIGHT_DAY 0.15
-#define AMBILIGHT_NIGHT 0.3
+#define AMBILIGHT_NIGHT 0.15
+
 #define PCF_FORSAMPLE 1
+
+#define GAMMA_CORRECTION_VALUE 2.2
+#define EXPOSURE_BIAS 1
 
 #define LIGHTS 1
 
@@ -39,6 +43,7 @@ struct Light {
     float range;
     mat4 projection;
     mat4 view;
+    float intensity;
 };
 uniform Light[LIGHTS] uLights;
 
@@ -48,6 +53,40 @@ struct DirectionalLight {
     float intensity;
 };
 uniform DirectionalLight uDirectionalLight;
+
+uniform sampler2D uPingPongTexture; //blurred bright objects for bloom
+
+vec3 blendTextures(sampler2D colorTexture, sampler2D bloomTexture) {
+    vec3 color = texture(colorTexture,vTextureCoords).rgb;
+    vec3 bloomColor = texture(bloomTexture, vTextureCoords).rgb;
+    return color+bloomColor;
+}
+
+vec3 filmicToneMapping(vec3 color) {
+    const float A = 0.22;      //Shoulder Strength
+    const float B = 0.30;      //Linear Strength
+    const float C = 0.10;      //Linear Angle
+    const float D = 0.20;      //Toe Strength
+    const float E = 0.01;      //Toe Numerator
+    const float F = 0.30;      //Toe Denominator
+    const float WHITE = 11.2;  // Linear White Point
+
+    vec3 newColor;
+
+    newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F);
+    newColor /= ((WHITE*(A*WHITE+C*B)+D*E)/(WHITE*(A*WHITE+B)+D*F)) - E/F;
+
+    return newColor;
+}
+
+vec3 reinhardToneMapping(vec3 color) {
+    vec3 mapped = color / (color + vec3(1.0));
+    return mapped;
+}
+
+vec3 gammaCorrection(vec3 color, float gamma) {
+    return pow(color.rgb, vec3(1.0 / gamma));
+}
 
 float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float forSamples, in float nDotL ) {
     float bias = max(0.02 * (1.0 - nDotL), 0.005);
@@ -149,7 +188,6 @@ void main(void) {
             vec3 N = normalize(normal.xyz);
 
             /******************************************* SUN DIRECTIONAL LIGHT ******************************************/
-
             vec3 sun_diffuse = vec3(0);
             vec3 sun_specular = vec3(0);
             vec3 sun_pos = uSun.position+position.xyz;
@@ -160,8 +198,6 @@ void main(void) {
             sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
             sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSun.color, sun_nDotl, specValues.g,specValues.r);
 
-            /*************************************************************************************************************/
-
             /******************************************* DIRECTIONAL LIGHT ******************************************/
          /*   vec3 sun_diffuse = vec3(0);
             vec3 sun_specular = vec3(0);
@@ -171,7 +207,6 @@ void main(void) {
             float sun_nDotl = dot(N, sun_direction);
             sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
             sun_specular += calculateSpecularBlinn(N, sun_V, sun_direction, uSun.color, sun_nDotl, specValues.g,specValues.r); */
-            /*************************************************************************************************************/
 
 
             /********************************************** NORMAL LIGHT *************************************************/
@@ -187,24 +222,32 @@ void main(void) {
 
                     nDotl = dot(N,L);
                     attenuation = attenuationOfLight(position.xyz, uLights[i].position, 1 , uLights[i].range );
-                    //attenuation = attenuation2(position.xyz, uLightPosArray[i]);
-                    diffuseFinal += calculateDiffuse(uLights[i].color,nDotl) * attenuation;
-                    specularFinal += calculateSpecularBlinn(N, V, L, uLights[i].color, nDotl, specValues.g,specValues.r) * attenuation;
+                    diffuseFinal += calculateDiffuse(uLights[i].color,nDotl) * attenuation * uLights[i].intensity;
+                    specularFinal += calculateSpecularBlinn(N, V, L, uLights[i].color, nDotl, specValues.g,specValues.r) * attenuation * uLights[i].intensity;
                 }
             }
-            /*************************************************************************************************************/
 
+            /***************************************** SHADOW ************************************************************/
             vec4 shadowCoords = uSun.projectionView * vec4(position.xyz,1.0);
             float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(N,sun_pos)));
 
             vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
             vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;
             vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
-            FragColor = vec4(finalLighting * color.rgb, 1.0);
+
+            vec3 finalColor = finalLighting*color.rgb;
+
+            /****************************** TONEMAP + GAMMA CORRECTION ***************************************************/
+            vec3 postProcessed = finalColor + texture(uPingPongTexture,vTextureCoords).rgb;
+            //postProcessed = filmicToneMapping(postProcessed.xyz*EXPOSURE_BIAS);
+            postProcessed = reinhardToneMapping(postProcessed.xyz*EXPOSURE_BIAS);
+            postProcessed =  gammaCorrection(postProcessed.rgb, GAMMA_CORRECTION_VALUE);
+
+            FragColor = vec4(postProcessed, 1.0);
         }
 
         /* RENDER BRIGHTOBJECTSTEXTURE */
-        float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-        if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
+       // float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+       // if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
     }
 }

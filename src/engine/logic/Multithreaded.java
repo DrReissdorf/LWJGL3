@@ -12,6 +12,7 @@ import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Multithreaded {
@@ -106,6 +107,7 @@ public class Multithreaded {
     void renderLoop() {
         glfwMakeContextCurrent(window);
         GL.createCapabilities();
+
         glfwSwapInterval(0);
         debugProc = GLUtil.setupDebugMessageCallback();
 
@@ -124,7 +126,7 @@ public class Multithreaded {
             lastNanoTime  = time;
 
             scene.draw(deltaTime);
-            limitFps(70);
+            limitFps(30);
 
             fps++;
             tempTime = time-lastFpsNanoTime;

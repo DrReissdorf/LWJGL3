@@ -34,7 +34,7 @@ public class Scene {
 
 		holder = HolderSingleton.getInstance();
 
-		mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), mainCameraFov,width,height,mainCameraNear,mainCameraFar,3f);
+		mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), 0.1f,mainCameraFov,width,height,mainCameraNear,mainCameraFar,3f);
 
 		createLight();
 		createMeshes();
@@ -44,9 +44,7 @@ public class Scene {
 		createGameObjects();
 	}
 
-	public void draw(float deltaTime) {
-		newRenderer.renderScene(dayTime,backgroundColor,mainCamera);
-
+	public void update() {
 		for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
 			Light light = gameObjectRoot.getLight();
 			if(light != null) {
@@ -58,6 +56,10 @@ public class Scene {
 		if(isLightMoving) dayTime += dayTimeIncrease;
 		fadeBackgroundColor(dayTime,dayTimeIncrease);
 		holder.getSun().dayNightCycle(dayTime,dayTimeIncrease);
+	}
+
+	public void render(float deltaTime) {
+		newRenderer.renderScene(dayTime,backgroundColor,mainCamera);
 	}
 
 	private void createMeshes() {
@@ -95,11 +97,11 @@ public class Scene {
 	}
 
 	private void createGameObjects() {
-		GameObjectRoot monkey = new GameObjectRoot(new Vec3(-2,1,2));
+		GameObjectRoot monkey = new GameObjectRoot(new Vec3(-2,1,2), 1.5f);
 		monkey.setModel(holder.getModel(3));
 		holder.addGameObjectRoot(monkey);
 
-		GameObjectRoot cube = new GameObjectRoot(new Vec3(0,0.5f,0));
+		GameObjectRoot cube = new GameObjectRoot(new Vec3(1,0.5f,0),1);
 		cube.setModel(holder.getModel(0));
 		holder.addGameObjectRoot(cube);
 
@@ -107,7 +109,7 @@ public class Scene {
 		for(int x=-value ; x<=value ; x++) {
 			for (int z=-value; z<=value; z++) {
 				float multi = 15.7f;
-				GameObjectRoot plane = new GameObjectRoot(new Vec3(x*multi,0,z*multi));
+				GameObjectRoot plane = new GameObjectRoot(new Vec3(x*multi,0,z*multi),2);
 				plane.setModel(holder.getModel(2));
 				holder.addGameObjectRoot(plane);
 			}
@@ -123,26 +125,26 @@ public class Scene {
 		}*/
 
 		/* SUN */
-		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-3));
+		GameObjectRoot lightGameObject = new GameObjectRoot(new Vec3(0,3,-3),1);
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setSun(holder.getSun());
 		lightGameObject.getSun().setGameObjectRoot(lightGameObject);
 		holder.addGameObjectRoot(lightGameObject);
 
 		/* LIGHT GAMEOBJECTS */
-		lightGameObject = new GameObjectRoot(new Vec3(-3,4,1));
+		lightGameObject = new GameObjectRoot(new Vec3(-3,4,1),1);
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(0));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
 		holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(3,4,1));
+		lightGameObject = new GameObjectRoot(new Vec3(3,4,1),1);
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(1));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
 		//holder.addGameObjectRoot(lightGameObject);
 
-		lightGameObject = new GameObjectRoot(new Vec3(0,4,-1));
+		lightGameObject = new GameObjectRoot(new Vec3(0,4,-1),1);
 		lightGameObject.setModel(holder.getModel(0));
 		lightGameObject.setLight(holder.getLight(2));
 		lightGameObject.getLight().setGameObjectRoot(lightGameObject);
@@ -153,7 +155,7 @@ public class Scene {
 		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
 		holder.setDirectionalLight(new DirectionalLight(new Vec3(1f,1f,1f),new Vec3(0,1,0),1));
 
-		holder.addLight(new PointLight(RgbToFloat(156,42,0),5,15,0.01f,5,90));
+		holder.addLight(new PointLight(RgbToFloat(156,42,0),3,15,0.01f,5,90));
 		holder.addLight(new PointLight(new Vec3(3f,0f,0f),1,10,0.01f,5,180));
 		holder.addLight(new PointLight(new Vec3(3f,3f,3f),1,10,0.01f,5,270));
 		holder.addLight(new PointLight(new Vec3(0f,2,0f),1,10,0.01f,5,135));

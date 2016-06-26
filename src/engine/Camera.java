@@ -10,8 +10,8 @@ public class Camera extends GameObjectRoot {
     private float moveSpeed;
     private final boolean printPosition = false;
 
-    public Camera(Vec3 position, float fov, int windowWidth, int windowHeight, float near, float far, float moveSpeed) {
-        super(position);
+    public Camera(Vec3 position, float collisionRadius, float fov, int windowWidth, int windowHeight, float near, float far, float moveSpeed) {
+        super(position, collisionRadius);
         lastTime = System.currentTimeMillis();
         this.moveSpeed = moveSpeed;
         projectionMatrix = Mat4.perspective( fov, windowWidth, windowHeight, near, far );

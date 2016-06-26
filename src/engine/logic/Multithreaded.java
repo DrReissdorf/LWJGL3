@@ -12,7 +12,6 @@ import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Multithreaded {
@@ -51,8 +50,8 @@ public class Multithreaded {
 
     void init() {
         glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
-        if (!glfwInit())
-            throw new IllegalStateException("Unable to initialize GLFW");
+
+        if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -85,6 +84,8 @@ public class Multithreaded {
         glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
 
         glfwShowWindow(window);
+
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     void updateLoop() {
@@ -100,6 +101,7 @@ public class Multithreaded {
 
         while (!destroyed) {
             inputHandler.updateInput();
+            scene.update();
             limitTps(60);
         }
     }
@@ -125,8 +127,8 @@ public class Multithreaded {
             deltaTime = (float)(time - lastNanoTime) * 1e-9f;
             lastNanoTime  = time;
 
-            scene.draw(deltaTime);
-            limitFps(30);
+            scene.render(deltaTime);
+            limitFps(60);
 
             fps++;
             tempTime = time-lastFpsNanoTime;
@@ -145,10 +147,6 @@ public class Multithreaded {
     }
 
     void winProcLoop() {
-		/*
-		 * Start new thread to have the OpenGL context current in and which does
-		 * the rendering.
-		 */
         new Thread(new Runnable() {
             public void run() {
                 renderLoop();
@@ -164,6 +162,9 @@ public class Multithreaded {
         while (!glfwWindowShouldClose(window)) {
             glfwWaitEvents();
         }
+
+        System.out.println("Shutting down...");
+        System.exit(-1);
     }
 
     private long variableYieldTimeFPS, lastTimeFPS;

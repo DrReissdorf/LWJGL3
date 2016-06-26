@@ -28,8 +28,6 @@ public class InputHandler {
         this.scene = scene;
         this.window = window;
         mainCamera = scene.getMainCamera();
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     public void updateInput() {
@@ -83,7 +81,11 @@ public class InputHandler {
         float deltaY = (float) b2.get(0)-lastFrameMouseY;
         lastFrameMouseX = (float) b1.get(0);
         lastFrameMouseY = (float) b2.get(0);
-        mainCamera.addRotations(deltaX * rotationScale, -deltaY * rotationScale);
+
+        if(mainCamera.getRotY()-(deltaY*rotationScale)>=-1.5f && mainCamera.getRotY()-(deltaY*rotationScale)<=1.5f) mainCamera.addRotY(-deltaY*rotationScale);
+
+        mainCamera.addRotX(deltaX*rotationScale);
+        //mainCamera.addRotations(deltaX * rotationScale, -deltaY * rotationScale);
     }
 
     private class KeyboardHandler extends GLFWKeyCallback {

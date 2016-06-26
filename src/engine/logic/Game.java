@@ -121,7 +121,7 @@ public class Game {
 
 
             //inputHandler.updateInput(deltaTime);
-            scene.draw(deltaTime);
+            scene.render(deltaTime);
             limitFps(30);
 
             fps++;

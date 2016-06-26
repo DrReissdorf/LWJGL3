@@ -4,6 +4,7 @@ import engine.Light.Light;
 import engine.Light.Sun;
 import math.Mat4;
 import math.Vec3;
+import singleton.HolderSingleton;
 import toolbox.Transformation;
 
 import static java.lang.Math.cos;
@@ -20,19 +21,14 @@ public class GameObjectRoot {
     private Model model;
     private Sun sun;
 
-    public GameObjectRoot(Vec3 position) {
+    private float collisionRadius;
+
+    public GameObjectRoot(Vec3 position, float collisionRadius) {
         this.position = position;
+        this.collisionRadius = collisionRadius;
         this.scale = 1;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
         //this.tranformationMatrix = Transformation.createTransMat(new Mat4(), position, scale);
-
-        updateVectors();
-    }
-
-    public GameObjectRoot(Vec3 position, float scale) {
-        this.position = position;
-        this.scale = scale;
-        this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
 
         updateVectors();
     }
@@ -123,41 +119,54 @@ public class GameObjectRoot {
 
     public void moveForward(float speed) {
         updateVectors();
-        position.x += forward.x * speed;
-        position.y += 0;
-        position.z += forward.z * speed;
+
+        Vec3 newPosition = new Vec3(position.x+(forward.x*speed),position.y,position.z+(forward.z*speed));
+        Vec3 X = new Vec3(newPosition.x,position.y,position.z);
+        Vec3 Z = new Vec3(position.x,position.y,newPosition.z);
+
+        if(!isColliding(X)) {
+            position.x = X.x;
+        }
+        if(!isColliding(Z)) {
+            position.z = Z.z;
+        }
+
         updateTranformationMatrix();
     }
 
     public void moveViewDirection(float speed) {
         updateVectors();
-        position.x += direction.x * speed;
-        position.y += direction.y * speed;
-        position.z += direction.z * speed;
+
+        Vec3 newPosition = new Vec3(position.x+(direction.x*speed),position.y+(direction.y*speed),position.z+(direction.z*speed));
+        if(!isColliding(newPosition)) position = newPosition;
+
         updateTranformationMatrix();
     }
 
     public void moveBackward(float speed) {
         updateVectors();
-        position.x -= forward.x * speed;
-        position.y -= forward.y * speed;
-        position.z -= forward.z * speed;
+
+        Vec3 newPosition = new Vec3(position.x-(forward.x*speed),position.y-(forward.y*speed),position.z-(forward.z*speed));
+        if(!isColliding(newPosition)) position = newPosition;
+
         updateTranformationMatrix();
     }
 
     public void moveRight(float speed) {
         updateVectors();
-        position.x += right.x * speed;
-        position.y += right.y * speed;
-        position.z += right.z * speed;
+
+        Vec3 newPosition = new Vec3(position.x+(right.x*speed),position.y,position.z+(right.z*speed));
+        if(!isColliding(newPosition)) position = newPosition;
+
         updateTranformationMatrix();
     }
 
     public void moveLeft(float speed) {
         updateVectors();
-        position.x -= right.x * speed;
-        position.y -= right.y * speed;
-        position.z -= right.z * speed;
+
+        Vec3 newPosition = new Vec3(position.x-(right.x*speed),position.y,position.z-(right.z*speed));
+        if(!isColliding(newPosition)) position = newPosition;
+
         updateTranformationMatrix();
     }
 
@@ -183,7 +192,20 @@ public class GameObjectRoot {
         updateTranformationMatrix();
     }
 
+    public void setRotX(float rotX) {
+        this.rotX = rotX;
+    }
+
+    public void setRotY(float rotY) {
+        this.rotY = rotY;
+    }
+
+    public void setRotZ(float rotZ) {
+        this.rotZ = rotZ;
+    }
+
     public void addRotations(float rotX, float rotY) {
+
         updateVectors();
         this.rotX -= rotX;
         this.rotY += rotY;
@@ -212,6 +234,30 @@ public class GameObjectRoot {
         updateTranformationMatrix();
     }
 
+    private boolean isColliding(Vec3 position) {
+        for(GameObjectRoot gameObjectRoot : HolderSingleton.getInstance().getGameObjectRoots()) {
+            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),position)) < gameObjectRoot.getCollisionRadius()+collisionRadius) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isColli(Vec3 position) {
+        Vec3 objectPos;
+
+        for(GameObjectRoot gameObjectRoot : HolderSingleton.getInstance().getGameObjectRoots()) {
+            objectPos = new Vec3(gameObjectRoot.getPosition());
+
+            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),position)) < gameObjectRoot.getCollisionRadius()+collisionRadius) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public Light getLight() {
         return light;
     }
@@ -226,5 +272,9 @@ public class GameObjectRoot {
 
     public void setSun(Sun sun) {
         this.sun = sun;
+    }
+
+    public float getCollisionRadius() {
+        return collisionRadius;
     }
 }

@@ -89,7 +89,7 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 }
 
 float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float forSamples, in float nDotL ) {
-    float bias = max(0.02 * (1.0 - nDotL), 0.005);
+    float bias = max(0.02 * (1.0 - nDotL), 0.003);
     //float bias = 0.002;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;

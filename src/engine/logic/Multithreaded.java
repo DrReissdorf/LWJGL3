@@ -82,7 +82,7 @@ public class Multithreaded {
 
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
-
+        glfwShowWindow(window);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
@@ -106,7 +106,7 @@ public class Multithreaded {
 
     void renderLoop() {
         glfwMakeContextCurrent(window);
-        glfwShowWindow(window);
+
         GL.createCapabilities();
 
         glfwSwapInterval(0); //disable vsync

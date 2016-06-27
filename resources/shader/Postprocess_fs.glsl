@@ -1,14 +1,8 @@
 #version 150
 
 #define GAMMA_CORRECTION_VALUE 2.2
-#define A 0.22      //Shoulder Strength
-#define B 0.30      //Linear Strength
-#define C 0.10      //Linear Angle
-#define D 0.20      //Toe Strength
-#define E 0.01      //Toe Numerator
-#define F 0.30      //Toe Denominator
-#define WHITE 11.2  // Linear White Point
-#define EXPOSURE_BIAS 2
+
+#define EXPOSURE_BIAS 5
 
 in vec2 vTextureCoords;
 uniform sampler2D uTexture;
@@ -16,6 +10,14 @@ uniform sampler2D uPingPongTexture; //blurred bright objects for bloom
 out vec4 FragColor;
 
 vec3 filmicToneMapping(vec3 color) {
+    const float A = 0.22;      //Shoulder Strength
+    const float B = 0.30;      //Linear Strength
+    const float C = 0.10;      //Linear Angle
+    const float D = 0.20;      //Toe Strength
+    const float E = 0.01;      //Toe Numerator
+    const float F = 0.30;      //Toe Denominator
+    const float WHITE = 11.2;  // Linear White Point
+
     vec3 newColor;
 
     newColor = (((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F)) - E/F);
@@ -41,7 +43,7 @@ vec3 gammaCorrection(vec3 color, float gamma) {
 
 void main() {
     vec3 color = blendTextures(uTexture, uPingPongTexture);
-
+    //vec3 color = texture(uTexture,vTextureCoords).rgb;
     //color = filmicToneMapping(color.xyz*EXPOSURE_BIAS);
     color = reinhardToneMapping(color.xyz*EXPOSURE_BIAS);
     color =  gammaCorrection(color.rgb, GAMMA_CORRECTION_VALUE);

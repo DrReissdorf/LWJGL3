@@ -9,9 +9,6 @@ layout (location = 1) out vec4 BrightColor;
 
 #define PCF_FORSAMPLE 1
 
-#define GAMMA_CORRECTION_VALUE 2.2
-#define EXPOSURE_BIAS 1
-
 #define LIGHTS 1
 
 uniform float uDayTime;
@@ -56,12 +53,6 @@ uniform DirectionalLight uDirectionalLight;
 
 uniform sampler2D uPingPongTexture; //blurred bright objects for bloom
 
-vec3 blendTextures(sampler2D colorTexture, sampler2D bloomTexture) {
-    vec3 color = texture(colorTexture,vTextureCoords).rgb;
-    vec3 bloomColor = texture(bloomTexture, vTextureCoords).rgb;
-    return color+bloomColor;
-}
-
 vec3 filmicToneMapping(vec3 color) {
     const float A = 0.22;      //Shoulder Strength
     const float B = 0.30;      //Linear Strength
@@ -77,15 +68,6 @@ vec3 filmicToneMapping(vec3 color) {
     newColor /= ((WHITE*(A*WHITE+C*B)+D*E)/(WHITE*(A*WHITE+B)+D*F)) - E/F;
 
     return newColor;
-}
-
-vec3 reinhardToneMapping(vec3 color) {
-    vec3 mapped = color / (color + vec3(1.0));
-    return mapped;
-}
-
-vec3 gammaCorrection(vec3 color, float gamma) {
-    return pow(color.rgb, vec3(1.0 / gamma));
 }
 
 float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float forSamples, in float nDotL ) {
@@ -235,19 +217,11 @@ void main(void) {
             vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;
             vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
 
-            vec3 finalColor = finalLighting*color.rgb;
-
-            /****************************** TONEMAP + GAMMA CORRECTION ***************************************************/
-            vec3 postProcessed = finalColor + texture(uPingPongTexture,vTextureCoords).rgb;
-            //postProcessed = filmicToneMapping(postProcessed.xyz*EXPOSURE_BIAS);
-            postProcessed = reinhardToneMapping(postProcessed.xyz*EXPOSURE_BIAS);
-            postProcessed =  gammaCorrection(postProcessed.rgb, GAMMA_CORRECTION_VALUE);
-
-            FragColor = vec4(postProcessed, 1.0);
+            FragColor = vec4(finalLighting*color.rgb, 1.0);
         }
 
         /* RENDER BRIGHTOBJECTSTEXTURE */
-       // float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-       // if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
+        float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+        if(brightness > 1.0) BrightColor = vec4(FragColor.rgb, 1.0);
     }
 }

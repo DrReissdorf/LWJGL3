@@ -26,7 +26,7 @@ public class Scene {
 	private Vec3 backgroundColor = RgbToFloat(54,155,255);
 	private Vec3 originalbackgroundColor = RgbToFloat(54,155,255);
 
-	private boolean isLightMoving = true;
+	private boolean isLightMoving = false;
 
 	public Scene(long window, int width, int height)	{
 		this.window = window;

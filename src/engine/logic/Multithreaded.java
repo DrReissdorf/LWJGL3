@@ -17,10 +17,10 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Multithreaded {
     private Scene scene;
     private InputHandler inputHandler;
-    GLFWErrorCallback errorCallback;
-    GLFWKeyCallback keyCallback;
-    GLFWFramebufferSizeCallback fsCallback;
-    Callback debugProc;
+    private GLFWErrorCallback errorCallback;
+    private GLFWKeyCallback keyCallback;
+    private GLFWFramebufferSizeCallback fsCallback;
+    private Callback debugProc;
 
     long window;
     int width = 1280;
@@ -146,17 +146,17 @@ public class Multithreaded {
     }
 
     void winProcLoop() {
-      /*  new Thread(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
                 renderLoop();
             }
-        }).start(); */
+        }).start();
 
         new Thread(() -> {
             updateLoop();
         }).start();
 
-        renderLoop();
+        //renderLoop();
 
         while (!glfwWindowShouldClose(window)) {
             glfwWaitEvents();

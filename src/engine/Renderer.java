@@ -2,7 +2,7 @@ package engine;
 
 import engine.Light.Light;
 import engine.Light.Sun;
-import engine.shader.MyShaderProgram;
+import engine.logic.MyShaderProgram;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
@@ -27,7 +27,7 @@ public class Renderer {
     private final int MAX_TEX_RESOLUTION_HEIGHT = 720;
     private final float renderDistance = 50;
 
-    private final String shaderLocation = "src/engine/shader/";
+    private final String shaderLocation = "resources/shader/";
 
     private MyShaderProgram geometryShader;
     private MyShaderProgram lightningShader;

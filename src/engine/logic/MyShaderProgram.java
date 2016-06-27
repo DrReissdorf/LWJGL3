@@ -1,18 +1,14 @@
-package engine.shader;
+package engine.logic;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import com.sun.javafx.geom.Matrix3f;
 import engine.Light.DirectionalLight;
 import engine.Light.Light;
-import engine.Light.PointLight;
 import engine.Light.Sun;
 import math.Mat3;
 import math.Mat4;
@@ -20,7 +16,6 @@ import math.Vec2;
 import math.Vec3;
 import math.Vec4;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.ovr.OVRMatrix4f;
 import util.FileIO;
 import util.Texture;
 

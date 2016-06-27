@@ -83,8 +83,6 @@ public class Multithreaded {
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
 
-        glfwShowWindow(window);
-
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
@@ -108,9 +106,10 @@ public class Multithreaded {
 
     void renderLoop() {
         glfwMakeContextCurrent(window);
+        glfwShowWindow(window);
         GL.createCapabilities();
 
-        glfwSwapInterval(0);
+        glfwSwapInterval(0); //disable vsync
         debugProc = GLUtil.setupDebugMessageCallback();
 
         scene = new Scene(window,width,height);
@@ -128,7 +127,7 @@ public class Multithreaded {
             lastNanoTime  = time;
 
             scene.render(deltaTime);
-            limitFps(60);
+            limitFps(30);
 
             fps++;
             tempTime = time-lastFpsNanoTime;
@@ -147,17 +146,17 @@ public class Multithreaded {
     }
 
     void winProcLoop() {
-        new Thread(new Runnable() {
+      /*  new Thread(new Runnable() {
             public void run() {
                 renderLoop();
             }
+        }).start(); */
+
+        new Thread(() -> {
+            updateLoop();
         }).start();
 
-        new Thread(new Runnable() {
-            public void run() {
-                updateLoop();
-            }
-        }).start();
+        renderLoop();
 
         while (!glfwWindowShouldClose(window)) {
             glfwWaitEvents();

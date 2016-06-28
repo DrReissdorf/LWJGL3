@@ -96,7 +96,7 @@ public class Game {
 
         GL.createCapabilities();
 
-        scene = new Scene(window,WIDTH,HEIGHT);
+        scene = new Scene(window);
         inputHandler = new InputHandler(window,scene);
 
         float   deltaTime;

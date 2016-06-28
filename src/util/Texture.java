@@ -99,8 +99,8 @@ public class Texture
 			in = new FileInputStream(path);
 			PNGDecoder decoder = new PNGDecoder(in);
 
-			System.out.println("width="+decoder.getWidth());
-			System.out.println("height="+decoder.getHeight());
+			System.out.println("WIDTH="+decoder.getWidth());
+			System.out.println("HEIGHT="+decoder.getHeight());
 
 			ByteBuffer buf = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
 			decoder.decode(buf, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
@@ -275,8 +275,8 @@ public class Texture
 
         // Reading header bytes
         // buf[2]=image type code 0x02=uncompressed BGR or BGRA
-        // buf[12]+[13]=width
-        // buf[14]+[15]=height
+        // buf[12]+[13]=WIDTH
+        // buf[14]+[15]=HEIGHT
         // buf[16]=image pixel size 0x20=32bit, 0x18=24bit 
         // buf{17]=Image Descriptor Byte=0x28 (00101000)=32bit/origin upperleft/non-interleaved
         for (int i=0;i<12;i++)

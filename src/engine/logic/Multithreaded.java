@@ -7,12 +7,19 @@ package engine.logic;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.Callback;
+import org.lwjgl.system.Platform;
+import org.lwjgl.system.macosx.ObjCRuntime;
 
 import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.JNI.invokePPP;
+import static org.lwjgl.system.JNI.invokePPV;
+import static org.lwjgl.system.JNI.invokePPZ;
 import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.macosx.ObjCRuntime.sel_getUid;
 
 public class Multithreaded {
     private Scene scene;
@@ -23,8 +30,8 @@ public class Multithreaded {
     private Callback debugProc;
 
     long window;
-    int width = 1280;
-    int height = 720;
+    public static int WIDTH = 1280;
+    public static int HEIGHT = 720;
     Object lock = new Object();
     boolean destroyed;
 
@@ -61,9 +68,22 @@ public class Multithreaded {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window = glfwCreateWindow(width, height, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
+
+        if ( Platform.get() == Platform.MACOSX ) {
+            System.out.println("OSX detected! Changing to hdpi mode");
+            long cocoaWindow = glfwGetCocoaWindow(window);
+
+            long objc_msgSend = ObjCRuntime.getLibrary().getFunctionAddress("objc_msgSend");
+            long contentView = invokePPP(objc_msgSend, cocoaWindow, sel_getUid("contentView"));
+
+            invokePPV(objc_msgSend, contentView, sel_getUid("setWantsBestResolutionOpenGLSurface:"), false);
+
+            boolean bool = invokePPZ(objc_msgSend, contentView, sel_getUid("wantsBestResolutionOpenGLSurface"));
+            System.out.println("wantsBestResolutionOpenGLSurface = " + bool);
+        }
 
         glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
             public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -74,16 +94,22 @@ public class Multithreaded {
         glfwSetFramebufferSizeCallback(window, fsCallback = new GLFWFramebufferSizeCallback() {
             public void invoke(long window, int w, int h) {
                 if (w > 0 && h > 0) {
-                    width = w;
-                    height = h;
+                    WIDTH = w;
+                    HEIGHT = h;
                 }
+
+              //  int[] newWidth = new int[1], newHeight = new int[1];
+              //  glfwGetFramebufferSize(window, newWidth, newHeight);
+              //  glViewport(0, 0, WIDTH, HEIGHT);
+
+                //glViewport(0, 0, newWidth[0], newHeight[0]);
+                System.out.println("glfwSetFramebufferSizeCallback: newWidth:"+ WIDTH +" newHeight:"+ HEIGHT);
             }
         });
 
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
+        glfwSetWindowPos(window, (vidmode.width() - WIDTH) / 2, (vidmode.height() - HEIGHT) / 2);
         glfwShowWindow(window);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     void updateLoop() {
@@ -112,7 +138,7 @@ public class Multithreaded {
         glfwSwapInterval(0); //disable vsync
         debugProc = GLUtil.setupDebugMessageCallback();
 
-        scene = new Scene(window,width,height);
+        scene = new Scene(window);
 
         float   deltaTime;
         long    lastNanoTime  = 0;

@@ -5,7 +5,6 @@ import engine.GameObjectRoot;
 import engine.Light.Light;
 import engine.Light.Sun;
 import engine.Model;
-import engine.logic.MyShaderProgram;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
@@ -161,7 +160,7 @@ public class Renderer {
     public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
         glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, windowWidth, windowHeight);
+        glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
 
         ArrayList<Light> lights = new ArrayList<>();
 
@@ -215,7 +214,7 @@ public class Renderer {
 
             glBindFramebuffer(GL_FRAMEBUFFER, pingPongFrameBuffers[frambufferIndex]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glViewport(0, 0, windowWidth, windowHeight);
+            glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
 
             blurShader.setUniform("uHorizontal", textureIndex);
 
@@ -229,7 +228,7 @@ public class Renderer {
     public void postProcessing() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, windowWidth, windowHeight);
+        glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);

@@ -10,6 +10,9 @@ import singleton.HolderSingleton;
 import toolbox.ObjLoader;
 import util.Texture;
 
+import static engine.logic.Multithreaded.HEIGHT;
+import static engine.logic.Multithreaded.WIDTH;
+
 public class Scene {
 	private HolderSingleton holder;
 	private long window;
@@ -28,13 +31,13 @@ public class Scene {
 
 	private boolean isLightMoving = false;
 
-	public Scene(long window, int width, int height)	{
+	public Scene(long window)	{
 		this.window = window;
-		newRenderer = new Renderer(width,height);
+		newRenderer = new Renderer(WIDTH, HEIGHT);
 
 		holder = HolderSingleton.getInstance();
 
-		mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), 0.1f,mainCameraFov,width,height,mainCameraNear,mainCameraFar,3f);
+		mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), 0.1f,mainCameraFov, WIDTH, HEIGHT,mainCameraNear,mainCameraFar,3f);
 
 		createLight();
 		createMeshes();

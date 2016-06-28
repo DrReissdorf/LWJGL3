@@ -29,11 +29,11 @@ public class Multithreaded {
     private GLFWFramebufferSizeCallback fsCallback;
     private Callback debugProc;
 
-    long window;
+    public static long window;
     public static int WIDTH = 1280;
     public static int HEIGHT = 720;
-    Object lock = new Object();
-    boolean destroyed;
+    private Object lock = new Object();
+    private boolean destroyed;
 
     void run() {
         System.setProperty("org.lwjgl.librarypath", new File("frameworks/lwjgl3/native").getAbsolutePath());
@@ -98,11 +98,6 @@ public class Multithreaded {
                     HEIGHT = h;
                 }
 
-              //  int[] newWidth = new int[1], newHeight = new int[1];
-              //  glfwGetFramebufferSize(window, newWidth, newHeight);
-              //  glViewport(0, 0, WIDTH, HEIGHT);
-
-                //glViewport(0, 0, newWidth[0], newHeight[0]);
                 System.out.println("glfwSetFramebufferSizeCallback: newWidth:"+ WIDTH +" newHeight:"+ HEIGHT);
             }
         });
@@ -138,7 +133,7 @@ public class Multithreaded {
         glfwSwapInterval(0); //disable vsync
         debugProc = GLUtil.setupDebugMessageCallback();
 
-        scene = new Scene(window);
+        scene = new Scene();
 
         float   deltaTime;
         long    lastNanoTime  = 0;

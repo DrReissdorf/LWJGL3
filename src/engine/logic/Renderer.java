@@ -25,8 +25,8 @@ import static org.lwjgl.opengl.GL30.*;
 public class Renderer {
   //  private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
     //private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
-    private final int MAX_TEX_RESOLUTION_WIDTH = 1280;
-    private final int MAX_TEX_RESOLUTION_HEIGHT = 720;
+    private final int MAX_TEX_RESOLUTION_WIDTH = 3840;
+    private final int MAX_TEX_RESOLUTION_HEIGHT = 2160;
     private final float renderDistance = 50;
 
     private final String shaderLocation = "resources/shader/";
@@ -55,12 +55,7 @@ public class Renderer {
     private Texture gBufferPositionTex, gBufferNormalReflectTex, gBufferColorSpecTex, gBufferSpecTex;
     private int gBufferID;
 
-    private int windowWidth, windowHeight;
-
-    public Renderer(int windowWidth, int windowHeight) {
-        this.windowHeight = windowHeight;
-        this.windowWidth = windowWidth;
-
+    public Renderer() {
         holder = HolderSingleton.getInstance();
 
         shadowShader        = new MyShaderProgram( shaderLocation + "Shadowmap_vs.glsl",    shaderLocation + "Shadowmap_fs.glsl" );
@@ -73,7 +68,7 @@ public class Renderer {
         initGeometryRendering();
         initPostProcessing();
         initBloomProcessing();
-        //resizeTextures();
+        resizeTextures();
 
         screenQuad = new MeshCreator().createQuad();
 
@@ -238,35 +233,35 @@ public class Renderer {
 
     private void resizeTextures() {
         glBindTexture( GL_TEXTURE_2D, postProcessTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, brightObjectsTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, pingPongTextures[0].getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, pingPongTextures[1].getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferColorSpecTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferNormalReflectTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferPositionTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferSpecTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
@@ -279,7 +274,7 @@ public class Renderer {
     private void initPostProcessing() {
         // To make texture resizable we need to assign it to 4k first, it just scales down
         postProcessTexture = TextureFactory.createSRGB_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
-        brightObjectsTexture = TextureFactory.createRGB16F_Texture(windowWidth,windowHeight);
+        brightObjectsTexture = TextureFactory.createRGB16F_Texture(MAX_TEX_RESOLUTION_WIDTH,MAX_TEX_RESOLUTION_HEIGHT);
         postProcessFramebuffer = FrameBufferFactory.create2AttachmentFramebuffer(postProcessTexture, brightObjectsTexture, MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT);
     }
 

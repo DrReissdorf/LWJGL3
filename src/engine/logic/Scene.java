@@ -15,7 +15,6 @@ import static engine.logic.Multithreaded.WIDTH;
 
 public class Scene {
 	private HolderSingleton holder;
-	private long window;
 
 	private Renderer newRenderer;
 	private Camera mainCamera;
@@ -31,9 +30,8 @@ public class Scene {
 
 	private boolean isLightMoving = false;
 
-	public Scene(long window)	{
-		this.window = window;
-		newRenderer = new Renderer(WIDTH, HEIGHT);
+	public Scene()	{
+		newRenderer = new Renderer();
 
 		holder = HolderSingleton.getInstance();
 
@@ -158,7 +156,7 @@ public class Scene {
 		holder.setSun(new Sun(new Vec3(1f,1f,1f),1)); //new Vec3(1f,1f,1f)
 		holder.setDirectionalLight(new DirectionalLight(new Vec3(1f,1f,1f),new Vec3(0,1,0),1));
 
-		holder.addLight(new PointLight(RgbToFloat(156,42,0),3,15,0.01f,5,90));
+		holder.addLight(new PointLight(RgbToFloat(156,42,0),1,15,0.01f,5,90));
 		holder.addLight(new PointLight(new Vec3(3f,0f,0f),1,10,0.01f,5,180));
 		holder.addLight(new PointLight(new Vec3(3f,3f,3f),1,10,0.01f,5,270));
 		holder.addLight(new PointLight(new Vec3(0f,2,0f),1,10,0.01f,5,135));

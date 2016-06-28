@@ -15,6 +15,7 @@ public class InputHandler {
     private long window;
     private boolean is_L_pressed = false;
     private boolean is_M_pressed = false;
+    private boolean isGrabbed = false;
     private boolean is_COMMA_pressed = false;
     private Camera mainCamera;
     private Scene scene;
@@ -35,8 +36,15 @@ public class InputHandler {
         if(glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
             if(!is_M_pressed) {
                 is_M_pressed = true;
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            } else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                if(!isGrabbed)glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                isGrabbed = !isGrabbed;
+            }
+        }
+        if(glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE) {
+            if(is_M_pressed) {
+                is_M_pressed = false;
+            }
         }
 
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {

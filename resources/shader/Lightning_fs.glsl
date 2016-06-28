@@ -7,7 +7,7 @@ layout (location = 1) out vec4 BrightColor;
 #define AMBILIGHT_DAY 0.15
 #define AMBILIGHT_NIGHT 0.15
 
-#define PCF_FORSAMPLE 1
+#define PCF_FORSAMPLE 0.5
 
 #define LIGHTS 1
 
@@ -71,7 +71,7 @@ vec3 filmicToneMapping(vec3 color) {
 }
 
 float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float forSamples, in float nDotL ) {
-    float bias = max(0.02 * (1.0 - nDotL), 0.003);
+    float bias = max(0.04 * (1.0 - nDotL), 0.003);
     //float bias = 0.002;
 
     vec3 ProjCoords = shadowmapCoord.xyz / shadowmapCoord.w;

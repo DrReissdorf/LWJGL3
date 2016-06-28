@@ -1,25 +1,12 @@
-/* 
- * Cologne University of Applied Sciences
- * Institute for Media and Imaging Technologies - Computer Graphics Group
- *
- * Copyright (c) 2012 Cologne University of Applied Sciences. All rights reserved.
- *
- * This source code is property of the Cologne University of Applied Sciences. Any redistribution
- * and use in source and binary forms, with or without modification, requires explicit permission. 
- */
 package math;
 
-
-
-public final class Vec3
-{
+public class Vec3 {
 	public float x;
 	public float y;
 	public float z;
 	
 	
-	public Vec3( float x, float y, float z )
-	{
+	public Vec3( float x, float y, float z ) {
 		this.x = x;
 		this.y = y;
 		this.z = z;

@@ -1,7 +1,6 @@
 
 package util;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.EXTABGR.GL_ABGR_EXT;
@@ -39,7 +38,7 @@ public class Texture
 	{
 		if( !TextureIDs.containsKey(filename) )
 		//	loadTexture( filename );
-			lol(filename);
+			lwjglLoadTexture(filename);
 		//load(filename);
 		this.textureID = TextureIDs.get( filename );
 	}
@@ -56,7 +55,7 @@ public class Texture
 		return this.textureID;
 	}
 	
-	private static void lol(String fileName) {
+	private static void lwjglLoadTexture(String fileName) {
 		String path = FileIO.pathOf( fileName );
 
 		IntBuffer w = BufferUtils.createIntBuffer(1);
@@ -88,44 +87,6 @@ public class Texture
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
-	}
-
-	private static void load( String filename) {
-		try{
-			String path = FileIO.pathOf( filename );
-
-			InputStream in;
-
-			in = new FileInputStream(path);
-			PNGDecoder decoder = new PNGDecoder(in);
-
-			System.out.println("WIDTH="+decoder.getWidth());
-			System.out.println("HEIGHT="+decoder.getHeight());
-
-			ByteBuffer buf = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
-			decoder.decode(buf, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
-			buf.flip();
-
-			int textureID = glGenTextures();
-			TextureIDs.put( filename, textureID );
-
-			int internalFormat = GL_RGB;
-			int format         = GL_RGB;
-
-			glActiveTexture( GL_TEXTURE0 );
-			glBindTexture( GL_TEXTURE_2D, textureID );
-
-			glTexImage2D( GL_TEXTURE_2D, 0, internalFormat, decoder.getWidth(), decoder.getHeight(), 0, format, GL_UNSIGNED_BYTE, buf );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-			//glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Config.getFloat("TextureAnisotropy") );
-			glGenerateMipmap( GL_TEXTURE_2D );
-			glBindTexture( GL_TEXTURE_2D, 0 );
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	private static void loadTexture( String filename )

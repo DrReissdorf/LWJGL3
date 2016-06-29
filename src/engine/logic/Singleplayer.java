@@ -4,6 +4,7 @@
  */
 package engine.logic;
 
+import engine.scene.Scene;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.Callback;
@@ -21,7 +22,7 @@ import static org.lwjgl.system.JNI.invokePPZ;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.macosx.ObjCRuntime.sel_getUid;
 
-public class Multithreaded {
+public class Singleplayer {
     private Scene scene;
     private InputHandler inputHandler;
     private GLFWErrorCallback errorCallback;
@@ -35,7 +36,7 @@ public class Multithreaded {
     private Object lock = new Object();
     private boolean destroyed;
 
-    void run() {
+    public void run() {
         System.setProperty("org.lwjgl.librarypath", new File("frameworks/lwjgl3/native").getAbsolutePath());
         try {
             init();
@@ -55,7 +56,7 @@ public class Multithreaded {
         }
     }
 
-    void init() {
+    private void init() {
         glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
@@ -107,7 +108,7 @@ public class Multithreaded {
         glfwShowWindow(window);
     }
 
-    void updateLoop() {
+    private void updateLoop() {
         while(scene == null) {
             try {
                 Thread.sleep(50);
@@ -125,7 +126,7 @@ public class Multithreaded {
         }
     }
 
-    void renderLoop() {
+    private void renderLoop() {
         glfwMakeContextCurrent(window);
 
         GL.createCapabilities();
@@ -166,7 +167,7 @@ public class Multithreaded {
         }
     }
 
-    void winProcLoop() {
+    private void winProcLoop() {
         new Thread(new Runnable() {
             public void run() {
                 renderLoop();
@@ -280,9 +281,4 @@ public class Multithreaded {
             }
         }
     }
-
-    public static void main(String[] args) {
-        new Multithreaded().run();
-    }
-
 }

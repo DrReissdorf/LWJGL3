@@ -1,21 +1,22 @@
-package engine.Light;
+package engine.gameobjects.Light;
 
-import engine.GameObjectRoot;
-import engine.Model;
+import engine.gameobjects.GameObjectRoot;
+import engine.gameobjects.Model;
 import math.Mat4;
 import math.Vec3;
 
-public class Moon {
+public class Sun {
     private GameObjectRoot gameObjectRoot;
     private Mat4 viewMatrix;
     private Mat4 projectionMatrix;
 
     private Vec3 color;
+    private Vec3 nightColor = new Vec3(0,0,1);
     private Vec3 originalColor;
     private float range;
     private Model model;
 
-    public Moon(Vec3 color, float range) {
+    public Sun(Vec3 color, float range) {
         this.color = color;
         originalColor = new Vec3(color);
         this.range = range;
@@ -47,6 +48,9 @@ public class Moon {
             if(color.x > 0) color.x -= fadeSpeed;
             if(color.y > 0) color.y -= fadeSpeed;
             if(color.z > 0) color.z -= fadeSpeed;
+            //if(color.x > nightColor.x) color.x -= fadeSpeed;
+            //if(color.y > nightColor.y) color.y -= fadeSpeed;
+            //if(color.z > nightColor.z) color.z -= fadeSpeed;
 
         } else {
             if(color.x <= 0) color.x = 0.01f;

@@ -1,7 +1,6 @@
-package engine;
+package engine.gameobjects;
 
 
-import math.Vec3;
 import util.Mesh;
 
 public class Model {

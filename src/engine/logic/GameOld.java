@@ -1,5 +1,6 @@
 package engine.logic;
 
+import engine.scene.Scene;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -11,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class Game {
+public class GameOld {
     private int WIDTH = 1280;
     private int HEIGHT = 720;
     private Scene scene;
@@ -186,7 +187,7 @@ public class Game {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        new Game().run();
+        new GameOld().run();
     }
 
 

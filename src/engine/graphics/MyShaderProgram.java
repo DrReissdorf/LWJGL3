@@ -1,4 +1,4 @@
-package engine.logic;
+package engine.graphics;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import engine.Light.DirectionalLight;
-import engine.Light.Light;
-import engine.Light.Sun;
+import engine.gameobjects.Light.DirectionalLight;
+import engine.gameobjects.Light.Light;
+import engine.gameobjects.Light.Sun;
 import math.Mat3;
 import math.Mat4;
 import math.Vec2;

@@ -1,6 +1,6 @@
-package engine.Light;
+package engine.gameobjects.Light;
 
-import engine.GameObjectRoot;
+import engine.gameobjects.GameObjectRoot;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;

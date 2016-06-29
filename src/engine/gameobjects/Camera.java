@@ -1,4 +1,4 @@
-package engine;
+package engine.gameobjects;
 
 import math.Mat4;
 import math.Vec3;

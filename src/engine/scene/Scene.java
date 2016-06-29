@@ -1,27 +1,22 @@
-package engine.logic;
+package engine.scene;
 
-import engine.*;
-import engine.Light.DirectionalLight;
-import engine.Light.Sun;
-import engine.Light.Light;
-import engine.Light.PointLight;
+import engine.gameobjects.Light.DirectionalLight;
+import engine.gameobjects.Light.Sun;
+import engine.gameobjects.Light.Light;
+import engine.gameobjects.Light.PointLight;
+import engine.gameobjects.GameObjectRoot;
+import engine.gameobjects.Model;
+import engine.gameobjects.ModelTexture;
+import engine.graphics.Renderer;
 import math.Vec3;
 import singleton.HolderSingleton;
 import toolbox.ObjLoader;
 import util.Texture;
 
-import static engine.logic.Multithreaded.HEIGHT;
-import static engine.logic.Multithreaded.WIDTH;
-
 public class Scene {
 	private HolderSingleton holder;
 
 	private Renderer newRenderer;
-	private Camera mainCamera;
-
-	private float mainCameraFov = 70.0f;
-	private float mainCameraNear   = 0.01f;
-	private float mainCameraFar    = 500.0f;
 
 	private float dayTime = 40;
 	private float dayTimeIncrease = 0.2f; //0.005f;
@@ -34,8 +29,6 @@ public class Scene {
 		newRenderer = new Renderer();
 
 		holder = HolderSingleton.getInstance();
-
-		mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), 0.1f,mainCameraFov, WIDTH, HEIGHT,mainCameraNear,mainCameraFar,3f);
 
 		createLight();
 		createMeshes();
@@ -60,7 +53,7 @@ public class Scene {
 	}
 
 	public void render(float deltaTime) {
-		newRenderer.renderScene(dayTime,backgroundColor,mainCamera);
+		newRenderer.renderScene(dayTime,backgroundColor);
 	}
 
 	private void createMeshes() {
@@ -163,10 +156,6 @@ public class Scene {
 		holder.addLight(new PointLight(new Vec3(2,0f,0f),1,10,0.01f,5,180));
 		holder.addLight(new PointLight(new Vec3(0f,0f,10f),1,10,0.01f,5,225));
     }
-
-	public Camera getMainCamera() {
-		return mainCamera;
-	}
 
 	public void setLightMoving(boolean lightMoving) {
 		isLightMoving = lightMoving;

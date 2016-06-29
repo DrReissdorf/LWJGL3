@@ -1,6 +1,7 @@
 package engine.logic;
 
-import engine.Camera;
+import engine.gameobjects.Camera;
+import engine.scene.Scene;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import singleton.HolderSingleton;
@@ -29,7 +30,7 @@ public class InputHandler {
     public InputHandler(long window, Scene scene) {
         this.scene = scene;
         this.window = window;
-        mainCamera = scene.getMainCamera();
+        mainCamera = HolderSingleton.getInstance().getMainCamera();
     }
 
     public void updateInput() {

@@ -1,7 +1,7 @@
-package engine;
+package engine.gameobjects;
 
-import engine.Light.Light;
-import engine.Light.Sun;
+import engine.gameobjects.Light.Light;
+import engine.gameobjects.Light.Sun;
 import math.Mat4;
 import math.Vec3;
 import singleton.HolderSingleton;

@@ -1,18 +1,28 @@
 package singleton;
 
-import engine.*;
-import engine.Light.DirectionalLight;
-import engine.Light.Light;
-import engine.Light.Sun;
+import engine.gameobjects.Camera;
+import engine.gameobjects.Light.DirectionalLight;
+import engine.gameobjects.Light.Light;
+import engine.gameobjects.Light.Sun;
+import engine.gameobjects.GameObjectRoot;
+import engine.gameobjects.Model;
+import engine.gameobjects.ModelTexture;
+import math.Vec3;
 import util.Mesh;
 import util.Texture;
 
 import java.util.ArrayList;
 
+import static engine.logic.Singleplayer.HEIGHT;
+import static engine.logic.Singleplayer.WIDTH;
+
 public class HolderSingleton {
+    private static HolderSingleton holderSingleton;
+
     private int shadowMapSize = 2048;
 
-    private static HolderSingleton holderSingleton;
+    private Camera mainCamera;
+
     private ArrayList<Light> lights;
     private ArrayList<GameObjectRoot> entities;
     private ArrayList<Mesh> meshes;
@@ -23,7 +33,12 @@ public class HolderSingleton {
     private Sun sun;
     private DirectionalLight directionalLight;
 
+    private float mainCameraFov = 70.0f;
+    private float mainCameraNear   = 0.01f;
+    private float mainCameraFar    = 500.0f;
+
     private HolderSingleton() {
+        mainCamera = new Camera(new Vec3(0.0f, 2.0f, -3.0f), 0.1f,mainCameraFov, WIDTH, HEIGHT,mainCameraNear,mainCameraFar,3f);
         lights = new ArrayList<>();
         entities = new ArrayList<>();
         meshes = new ArrayList<>();
@@ -148,5 +163,9 @@ public class HolderSingleton {
 
     public void setDirectionalLight(DirectionalLight directionalLight) {
         this.directionalLight = directionalLight;
+    }
+
+    public Camera getMainCamera() {
+        return mainCamera;
     }
 }

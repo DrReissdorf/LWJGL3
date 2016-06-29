@@ -1,4 +1,4 @@
-package engine.Light;
+package engine.gameobjects.Light;
 
 import math.Vec3;
 

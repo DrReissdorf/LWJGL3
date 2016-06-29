@@ -1,10 +1,11 @@
-package engine.logic;
+package engine.graphics;
 
-import engine.Camera;
-import engine.GameObjectRoot;
-import engine.Light.Light;
-import engine.Light.Sun;
-import engine.Model;
+import engine.gameobjects.Camera;
+import engine.gameobjects.GameObjectRoot;
+import engine.gameobjects.Light.Light;
+import engine.gameobjects.Light.Sun;
+import engine.gameobjects.Model;
+import engine.logic.Singleplayer;
 import singleton.HolderSingleton;
 import math.Mat4;
 import math.Vec3;
@@ -77,25 +78,26 @@ public class Renderer {
         glEnable(GL_DEPTH_TEST);
     }
 
-    public void renderScene(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
-        renderGeometry(mainCamera);
-        renderShadowMap(mainCamera);
-        renderLightning(dayTime, backgroundColor,mainCamera);
+    public void renderScene(float dayTime, Vec3 backgroundColor) {
+        renderGeometry();
+        renderShadowMap();
+        renderLightning(dayTime, backgroundColor);
         //blurBloom();
         postProcessing();
 
     }
 
-    private void renderShadowMap(Camera mainCamera)  {
+    private void renderShadowMap()  {
         glViewport(0, 0, holder.getShadowMapSize(), holder.getShadowMapSize());
         glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
         glCullFace(GL_FRONT);
 
-        shadowShader.useProgram();
-
+        Camera mainCamera = holder.getMainCamera();
         Sun sun = holder.getSun();
+
+        shadowShader.useProgram();
 
         Mat4 mv = Mat4.mul(sun.getProjectionMatrix(), sun.getViewMatrix());
 
@@ -109,10 +111,12 @@ public class Renderer {
         glCullFace(GL_BACK);
     }
 
-    public void renderGeometry(Camera mainCamera) {
+    public void renderGeometry() {
         glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glCullFace(GL_BACK);
+
+        Camera mainCamera = holder.getMainCamera();
 
         geometryShader.useProgram();
         geometryShader.setUniform("uProjectionView", Mat4.mul(mainCamera.getProjectionMatrix(), mainCamera.getViewMatrix()));
@@ -152,10 +156,10 @@ public class Renderer {
         }
     }
 
-    public void renderLightning(float dayTime, Vec3 backgroundColor, Camera mainCamera) {
+    public void renderLightning(float dayTime, Vec3 backgroundColor) {
         glBindFramebuffer(GL_FRAMEBUFFER, postProcessFramebuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
+        glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
         ArrayList<Light> lights = new ArrayList<>();
 
@@ -167,6 +171,8 @@ public class Renderer {
                 }
             }
         }
+
+        Camera mainCamera = holder.getMainCamera();
 
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
@@ -209,7 +215,7 @@ public class Renderer {
 
             glBindFramebuffer(GL_FRAMEBUFFER, pingPongFrameBuffers[frambufferIndex]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
+            glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
             blurShader.setUniform("uHorizontal", textureIndex);
 
@@ -223,7 +229,7 @@ public class Renderer {
     public void postProcessing() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, Multithreaded.WIDTH, Multithreaded.HEIGHT);
+        glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
         postProcessShader.useProgram();
         postProcessShader.setUniform("uTexture", postProcessTexture);
@@ -233,35 +239,35 @@ public class Renderer {
 
     private void resizeTextures() {
         glBindTexture( GL_TEXTURE_2D, postProcessTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, brightObjectsTexture.getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, pingPongTextures[0].getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, pingPongTextures[1].getID() );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer)null );
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferColorSpecTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferNormalReflectTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferPositionTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         glBindTexture( GL_TEXTURE_2D, gBufferSpecTex.getID() );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Multithreaded.WIDTH, Multithreaded.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Singleplayer.WIDTH, Singleplayer.HEIGHT, 0, GL_RGB, GL_FLOAT, (FloatBuffer) null);
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 

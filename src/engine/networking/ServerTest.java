@@ -23,26 +23,29 @@ public class ServerTest {
 
         kryo.register(Vec3.class);
         kryo.register(Vec3[].class);
-        kryo.register(float[].class);
         kryo.register(MessagePosition.class);
 
+        kryo.register(String.class);
 
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                System.out.println("Receivedlistener...");
+                System.out.println("Receivedlistener... Object Class: "+object.getClass());
 
                 if (object instanceof TestMessage) {
                     TestMessage request = (TestMessage)object;
                     System.out.println("Name: "+request.name+" time: "+request.time+" date: "+request.date);
+                    server.sendToUDP(connection.getID(), "TestMessage erhalten!");
                 }
 
                 if (object instanceof MessagePosition) {
                     MessagePosition request = (MessagePosition)object;
-                    Vec3[] floats = request.positions;
+                    Vec3[] positionVectors = request.positions;
 
-                    for(int i=0 ; i<floats.length ; i++) {
-                        System.out.println("Floats: "+i+": "+floats[i]);
+                    for(int i=0 ; i<positionVectors.length ; i++) {
+                        System.out.println("Vector "+(i+1)+": "+positionVectors[i]);
                     }
+
+                    server.sendToUDP(connection.getID(), "MessagePosition erhalten!");
                 }
             }
         });

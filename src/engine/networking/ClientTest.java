@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Date;
 
 public class ClientTest {
-    public static void main(String args[]) {
+    public static void main(String args[]) throws InterruptedException {
         Client client = new Client();
         client.start();
 
@@ -29,11 +29,13 @@ public class ClientTest {
         kryoClient.register(Vec3[].class);
         kryoClient.register(MessagePosition.class);
 
+        kryoClient.register(String.class);
+
         TestMessage request = new TestMessage();
         request.name = "A CLIENT SENDS HIS REGARDS";
         request.time = System.currentTimeMillis();
         request.date = new Date();
-        client.sendTCP(request);
+        client.sendUDP(request);
 
         MessagePosition pos = new MessagePosition();
 
@@ -42,7 +44,7 @@ public class ClientTest {
         positions[1] = new Vec3();
         positions[2] = new Vec3();
         pos.positions = positions;
-        client.sendTCP(pos);
+        client.sendUDP(pos);
 
         client.addListener(new Listener() {
             public void received (Connection connection, Object object) {
@@ -50,7 +52,15 @@ public class ClientTest {
                     TestMessage response = (TestMessage)object;
                     System.out.println(response.name);
                 }
+
+                if (object instanceof String) {
+                    System.out.println((String)object);
+                }
             }
         });
+
+
+        client.getUpdateThread().join();
+
     }
 }

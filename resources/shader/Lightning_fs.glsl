@@ -44,13 +44,6 @@ struct Light {
 };
 uniform Light[LIGHTS] uLights;
 
-struct DirectionalLight {
-    vec3 color;
-    vec3 direction;
-    float intensity;
-};
-uniform DirectionalLight uDirectionalLight;
-
 uniform sampler2D uPingPongTexture; //blurred bright objects for bloom
 
 vec3 filmicToneMapping(vec3 color) {
@@ -151,74 +144,59 @@ void main(void) {
     if(normal.x==0.0 && normal.y==0.0 && normal.z==0.0) {
         FragColor = vec4(backgroundColor,1.0);
     } else {
-        if(specValues.z == 1) { //light detected, color object in light color
-            FragColor = color;
+        float spec_reflectivity = normal.a;
+        float spec_shininess = color.a;
+
+        vec3 ambient;
+        if(uDayTime > 180) {
+            ambient = AMBILIGHT_DAY * color.rgb;
         } else {
-            float spec_reflectivity = normal.a;
-            float spec_shininess = color.a;
-
-            vec3 ambient;
-            if(uDayTime > 180) {
-                ambient = AMBILIGHT_DAY * color.rgb;
-            } else {
-                ambient = AMBILIGHT_NIGHT * color.rgb;
-            }
-
-            vec3 diffuseFinal = vec3(0);
-            vec3 specularFinal = vec3(0);
-
-            vec3 N = normalize(normal.xyz);
-
-            /******************************************* SUN DIRECTIONAL LIGHT ******************************************/
-            vec3 sun_diffuse = vec3(0);
-            vec3 sun_specular = vec3(0);
-            vec3 sun_pos = uSun.position+position.xyz;
-            vec3 sun_N = normalize(normal.xyz);
-            vec3 sun_L = normalize(sun_pos-position.xyz);
-            vec3 sun_V = normalize(cameraPos - position.xyz);
-            float sun_nDotl = dot(sun_N, sun_L);
-            sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
-            sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSun.color, sun_nDotl, specValues.g,specValues.r);
-
-            /******************************************* DIRECTIONAL LIGHT ******************************************/
-         /*   vec3 sun_diffuse = vec3(0);
-            vec3 sun_specular = vec3(0);
-            vec3 sun_direction = normalize((uDirectionalLight.direction));
-
-            vec3 sun_V = normalize(cameraPos-position.xyz);
-            float sun_nDotl = dot(N, sun_direction);
-            sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
-            sun_specular += calculateSpecularBlinn(N, sun_V, sun_direction, uSun.color, sun_nDotl, specValues.g,specValues.r); */
-
-
-            /********************************************** NORMAL LIGHT *************************************************/
-            float nDotl;
-            float attenuation;
-            vec3 L;
-            for(int i=0 ; i<LIGHTS ; i++) {
-                L = uLights[i].position-position.xyz;
-
-                if(length(L) < uLights[i].range) { // just calculate lightning for objects the light can actually reach
-                    L = normalize(L);
-                    vec3 V = normalize(cameraPos - position.xyz);
-
-                    nDotl = dot(N,L);
-                    attenuation = attenuationOfLight(position.xyz, uLights[i].position, 1 , uLights[i].range );
-                    diffuseFinal += calculateDiffuse(uLights[i].color,nDotl) * attenuation * uLights[i].intensity;
-                    specularFinal += calculateSpecularBlinn(N, V, L, uLights[i].color, nDotl, specValues.g,specValues.r) * attenuation * uLights[i].intensity;
-                }
-            }
-
-            /***************************************** SHADOW ************************************************************/
-            vec4 shadowCoords = uSun.projectionView * vec4(position.xyz,1.0);
-            float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(N,sun_pos)));
-
-            vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
-            vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;
-            vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
-
-            FragColor = vec4(finalLighting*color.rgb, 1.0);
+            ambient = AMBILIGHT_NIGHT * color.rgb;
         }
+
+        vec3 diffuseFinal = vec3(0);
+        vec3 specularFinal = vec3(0);
+
+        vec3 N = normalize(normal.xyz);
+
+        /******************************************* SUN DIRECTIONAL LIGHT ******************************************/
+        vec3 sun_diffuse = vec3(0);
+        vec3 sun_specular = vec3(0);
+        vec3 sun_pos = uSun.position+position.xyz;
+        vec3 sun_N = normalize(normal.xyz);
+        vec3 sun_L = normalize(sun_pos-position.xyz);
+        vec3 sun_V = normalize(cameraPos - position.xyz);
+        float sun_nDotl = dot(sun_N, sun_L);
+        sun_diffuse += calculateDiffuse(uSun.color,sun_nDotl);
+        sun_specular += calculateSpecularBlinn(sun_N, sun_V, sun_L, uSun.color, sun_nDotl, specValues.g,specValues.r);
+
+        /********************************************** NORMAL LIGHT *************************************************/
+        float nDotl;
+        float attenuation;
+        vec3 L;
+        for(int i=0 ; i<LIGHTS ; i++) {
+            L = uLights[i].position-position.xyz;
+
+            if(length(L) < uLights[i].range) { // just calculate lightning for objects the light can actually reach
+                L = normalize(L);
+                vec3 V = normalize(cameraPos - position.xyz);
+
+                nDotl = dot(N,L);
+                attenuation = attenuationOfLight(position.xyz, uLights[i].position, 1 , uLights[i].range );
+                diffuseFinal += calculateDiffuse(uLights[i].color,nDotl) * attenuation * uLights[i].intensity;
+                specularFinal += calculateSpecularBlinn(N, V, L, uLights[i].color, nDotl, specValues.g,specValues.r) * attenuation * uLights[i].intensity;
+            }
+        }
+
+        /***************************************** SHADOW ************************************************************/
+        vec4 shadowCoords = uSun.projectionView * vec4(position.xyz,1.0);
+        float shadowFactor = shadows_PCF(uShadowmap,shadowCoords,PCF_FORSAMPLE,(dot(N,sun_pos)));
+
+        vec3 sunLightingAndShadow = (((0.25+shadowFactor) * (sun_diffuse+sun_specular))*color.rgb)+ambient;
+        vec3 LightSourceLighting = ((diffuseFinal+specularFinal)*color.rgb)+ambient;
+        vec3 finalLighting = sunLightingAndShadow + LightSourceLighting ;  //SECOND OPTION
+
+        FragColor = vec4(finalLighting*color.rgb, 1.0);
 
         /* RENDER BRIGHTOBJECTSTEXTURE */
         float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));

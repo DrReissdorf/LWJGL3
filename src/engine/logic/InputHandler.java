@@ -21,7 +21,7 @@ public class InputHandler {
     private Camera mainCamera;
     private Scene scene;
 
-    private final float movementMulti = 0.05f;
+    private final float movementMulti = 2f;
 
     private float lastFrameMouseX=0, lastFrameMouseY=0;
     private DoubleBuffer b1 = BufferUtils.createDoubleBuffer(1);
@@ -33,11 +33,11 @@ public class InputHandler {
         mainCamera = HolderSingleton.getInstance().getMainCamera();
     }
 
-    public void updateInput() {
+    public void updateInput(float deltaTime) {
         if(glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
             if(!is_M_pressed) {
                 is_M_pressed = true;
-                if(!isGrabbed)glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                if(!isGrabbed) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 isGrabbed = !isGrabbed;
             }
@@ -73,22 +73,22 @@ public class InputHandler {
         }
 
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            mainCamera.moveForward(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.moveForward(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            mainCamera.moveLeft(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.getRoot().moveLeft(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            mainCamera.moveBackward(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.moveBackward(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            mainCamera.moveRight(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.getRoot().moveRight(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
         if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            mainCamera.moveUp(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.getRoot().moveUp(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
         if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            mainCamera.moveDown(mainCamera.getMoveSpeed()*movementMulti);
+            mainCamera.getRoot().moveDown(mainCamera.getMoveSpeed()*movementMulti*deltaTime);
         }
 
         glfwGetCursorPos(window, b1, b2);
@@ -99,28 +99,9 @@ public class InputHandler {
         lastFrameMouseX = (float) b1.get(0);
         lastFrameMouseY = (float) b2.get(0);
 
-        if(mainCamera.getRotY()-(deltaY*rotationScale)>=-1.5f && mainCamera.getRotY()-(deltaY*rotationScale)<=1.5f) mainCamera.addRotY(-deltaY*rotationScale);
+        System.out.println(deltaX + " " + deltaY);
 
-        mainCamera.addRotX(deltaX*rotationScale);
-        //mainCamera.addRotations(deltaX * rotationScale, -deltaY * rotationScale);
-    }
-
-    private class KeyboardHandler extends GLFWKeyCallback {
-        public boolean[] keys = new boolean[65536];
-
-
-        // The GLFWKeyCallback class is an abstract method that
-        // can't be instantiated by itself and must instead be extended
-        //
-        @Override
-        public void invoke(long window, int key, int scancode, int action, int mods) {
-            keys[key] = action != GLFW_RELEASE;
-        }
-
-        // boolean method that returns true if a given key
-        // is pressed.
-        public boolean isKeyDown(int keycode) {
-            return keys[keycode];
-        }
+        if(mainCamera.getRoot().getRotY()-(deltaY*rotationScale)>=-1.5f && mainCamera.getRoot().getRotY()-(deltaY*rotationScale)<=1.5f) mainCamera.getRoot().addRotY(-deltaY*rotationScale);
+        mainCamera.getRoot().addRotX(deltaX*rotationScale);
     }
 }

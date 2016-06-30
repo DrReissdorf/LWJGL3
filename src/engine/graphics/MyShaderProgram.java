@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import engine.gameobjects.Light.DirectionalLight;
-import engine.gameobjects.Light.Light;
+
 import engine.gameobjects.Light.Sun;
+import engine.gameobjects.Light.Light;
 import math.Mat3;
 import math.Mat4;
 import math.Vec2;
@@ -253,10 +253,10 @@ public class MyShaderProgram {
 
     }
 
-    public void setUniform(String uniformName, DirectionalLight directionalLight) {
-        setUniform(uniformName + ".color", directionalLight.getColor() );
-        setUniform(uniformName + ".direction", directionalLight.getDirection());
-        setUniform(uniformName + ".intensity", directionalLight.getIntensity());
+    public void setUniform(String uniformName, ArrayList<Light> lights, boolean bool) {
+        for(int i=0 ; i<lights.size() ; i++) {
+            setUniform(uniformName + "[" + i + "]", lights.get(i));
+        }
     }
 
     public void setUniform(String uniformName, Light light) {
@@ -266,11 +266,5 @@ public class MyShaderProgram {
         setUniform(uniformName + ".projection", light.getProjectionMatrix());
         setUniform(uniformName + ".view", light.getViewMatrix());
         setUniform(uniformName + ".intensity", light.getIntensity());
-    }
-
-    public void setUniform(String uniformName, ArrayList<Light> lights) {
-        for(int i=0 ; i<lights.size() ; i++) {
-            setUniform(uniformName + "[" + i + "]", lights.get(i));
-        }
     }
 }

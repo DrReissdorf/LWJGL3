@@ -123,25 +123,6 @@ public class Multiplayer {
         glfwShowWindow(window);
     }
 
-    private void updateLoop() {
-        while(scene == null) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        inputHandler = new InputHandler(window,scene);
-
-        while (!destroyed) {
-            inputHandler.updateInput();
-            scene.update();
-            client.sendUDP(networkingDataSingleton.getLocalPlayer());
-            limitTps(60);
-        }
-    }
-
     private void renderLoop() {
         glfwMakeContextCurrent(window);
 
@@ -151,6 +132,7 @@ public class Multiplayer {
         debugProc = GLUtil.setupDebugMessageCallback();
 
         scene = new Scene();
+        inputHandler = new InputHandler(window,scene);
 
         float   deltaTime;
         long    lastNanoTime  = 0;
@@ -164,6 +146,8 @@ public class Multiplayer {
             deltaTime = (float)(time - lastNanoTime) * 1e-9f;
             lastNanoTime  = time;
 
+            inputHandler.updateInput(deltaTime);
+            scene.update(deltaTime);
             scene.render(deltaTime);
             limitFps(30);
 
@@ -186,10 +170,6 @@ public class Multiplayer {
     private void winProcLoop() {
         new Thread(() -> {
             renderLoop();
-        }).start();
-
-        new Thread(() -> {
-            updateLoop();
         }).start();
 
         while (!glfwWindowShouldClose(window)) {
@@ -243,53 +223,6 @@ public class Multiplayer {
             else if (overSleep < variableYieldTimeFPS - 200*1000) {
                 // decrease by 2 microseconds
                 variableYieldTimeFPS = Math.max(variableYieldTimeFPS - 2*1000, 0);
-            }
-        }
-    }
-
-    private long variableYieldTimeTPS, lastTimeTPS;
-    /**
-     * An accurate limitFps method that adapts automatically
-     * to the system it runs on to provide reliable results.
-     *
-     * @param fps The desired frame rate, in frames per second
-     * @author kappa (On the LWJGL Forums)
-     */
-    private void limitTps(int fps) {
-        if (fps <= 0) return;
-
-        long sleepTime = 1000000000 / fps; // nanoseconds to sleep this frame
-        // yieldTime + remainder micro & nano seconds if smaller than sleepTime
-        long yieldTime = Math.min(sleepTime, variableYieldTimeTPS + sleepTime % (1000*1000));
-        long overSleep = 0; // time the limitFps goes over by
-
-        try {
-            while (true) {
-                long t = System.nanoTime() - lastTimeTPS;
-
-                if (t < sleepTime - yieldTime) {
-                    Thread.sleep(1);
-                }else if (t < sleepTime) {
-                    // burn the last few CPU cycles to ensure accuracy
-                    Thread.yield();
-                }else {
-                    overSleep = t - sleepTime;
-                    break; // exit while loop
-                }
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally{
-            lastTimeTPS = System.nanoTime() - Math.min(overSleep, sleepTime);
-
-            // auto tune the time limitFps should yield
-            if (overSleep > variableYieldTimeTPS) {
-                // increase by 200 microseconds (1/5 a ms)
-                variableYieldTimeTPS = Math.min(variableYieldTimeTPS + 200*1000, sleepTime);
-            }
-            else if (overSleep < variableYieldTimeTPS - 200*1000) {
-                // decrease by 2 microseconds
-                variableYieldTimeTPS = Math.max(variableYieldTimeTPS - 2*1000, 0);
             }
         }
     }

@@ -1,9 +1,9 @@
 package engine.graphics;
 
+import engine.gameobjects.Light.Sun;
 import engine.gameobjects.Camera;
 import engine.gameobjects.GameObjectRoot;
 import engine.gameobjects.Light.Light;
-import engine.gameobjects.Light.Sun;
 import engine.gameobjects.Model;
 import engine.logic.Singleplayer;
 import singleton.HolderSingleton;
@@ -101,10 +101,19 @@ public class Renderer {
 
         Mat4 mv = Mat4.mul(sun.getProjectionMatrix(), sun.getViewMatrix());
 
-        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
+    /*    for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
             if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
                 shadowShader.setUniform("uProjectionViewModel", Mat4.mul(mv,gameObjectRoot.getTranformationMatrix()));
                 gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
+            }
+        } */
+
+        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
+            for(Model modelTest : gameObjectRoot.getAllModels()) {
+                if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getRoot().getPosition()))<renderDistance) {
+                    shadowShader.setUniform("uProjectionViewModel", Mat4.mul(mv,gameObjectRoot.getTranformationMatrix()));
+                    modelTest.getMesh().draw(GL_TRIANGLES);
+                }
             }
         }
 
@@ -121,7 +130,7 @@ public class Renderer {
         geometryShader.useProgram();
         geometryShader.setUniform("uProjectionView", Mat4.mul(mainCamera.getProjectionMatrix(), mainCamera.getViewMatrix()));
 
-        for(GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
+    /*    for(GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
             if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition())) < renderDistance && gameObjectRoot.getModel()!=null) {
                 geometryShader.setUniform("uModel",     gameObjectRoot.getTranformationMatrix());
                 geometryShader.setUniform("uNormalMat", createNormalMat(gameObjectRoot.getTranformationMatrix()));
@@ -153,6 +162,31 @@ public class Renderer {
                 model.getMesh().draw(GL_TRIANGLES);
             }
 
+        } */
+
+        for(GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
+            for(Model modelTest : gameObjectRoot.getAllModels()) {
+                if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getRoot().getPosition())) < renderDistance) {
+                    geometryShader.setUniform("uModel",     gameObjectRoot.getTranformationMatrix());
+                    geometryShader.setUniform("uNormalMat", createNormalMat(gameObjectRoot.getTranformationMatrix()));
+
+                    Model model = modelTest;
+
+                    if(model.getModelTexture() != null) {
+                        geometryShader.setUniform("uHasTexture", 1.0f);
+                        geometryShader.setUniform("uTexture",       model.getModelTexture().getTexture());
+                        geometryShader.setUniform("uShininess",     model.getModelTexture().getShininess());
+                        geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
+                        geometryShader.setUniform("uTextureScale",  model.getTextureScale());
+                    } else {
+                        geometryShader.setUniform("uHasTexture", 0.0f);
+                        geometryShader.setUniform("uShininess", 100.0f);
+                        geometryShader.setUniform("uReflectivity", 0.5f);
+                    }
+
+                    model.getMesh().draw(GL_TRIANGLES);
+                }
+            }
         }
     }
 
@@ -161,13 +195,11 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
-        ArrayList<Light> lights = new ArrayList<>();
-
-        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            Light light = gameObjectRoot.getLight();
-            if(light != null) {
-                if (Vec3.length(Vec3.sub(gameObjectRoot.getPosition(), light.getPosition())) < renderDistance) {
-                    lights.add(gameObjectRoot.getLight());
+        ArrayList<Light> lightTests = new ArrayList<>();
+        for (GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
+            for (Light lightTest : gameObjectRoot.getAllLights()) {
+                if (Vec3.length(Vec3.sub(gameObjectRoot.getPosition(), lightTest.getPosition())) < renderDistance) {
+                    lightTests.add(lightTest);
                 }
             }
         }
@@ -176,7 +208,7 @@ public class Renderer {
 
         lightningShader.useProgram();
         lightningShader.setUniform("backgroundColor", backgroundColor);
-        lightningShader.setUniform("cameraPos", mainCamera.getPosition());
+        lightningShader.setUniform("cameraPos", mainCamera.getRoot().getPosition());
         lightningShader.setUniform("uPingPongTexture", pingPongTextures[0]);
 
         lightningShader.setUniform("uDayTime", dayTime);
@@ -186,12 +218,11 @@ public class Renderer {
         lightningShader.setUniform("uColorSpecTex", gBufferColorSpecTex);
         lightningShader.setUniform("uSpecTex", gBufferSpecTex);
 
-        lightningShader.setUniform("uLights",lights);
+        //lightningShader.setUniform("uLights",lights);
+        lightningShader.setUniform("uLights",lightTests,true);
 
         Sun sun = holder.getSun();
         lightningShader.setUniform("uSun",sun);
-        lightningShader.setUniform("uDirectionalLight",holder.getDirectionalLight());
-
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 
         screenQuad.draw();
@@ -301,7 +332,7 @@ public class Renderer {
         gBufferID = FrameBufferFactory.setup_Gbuffer(MAX_TEX_RESOLUTION_WIDTH, MAX_TEX_RESOLUTION_HEIGHT , gBufferColorSpecTex, gBufferNormalReflectTex, gBufferPositionTex, gBufferSpecTex);
     }
 
-    private int[] getClosestLightsIndices(Vec3 currentPos) {
+    /*private int[] getClosestLightsIndices(Vec3 currentPos) {
         Light closest = null;
         Light sndClosest = null;
 
@@ -325,7 +356,7 @@ public class Renderer {
 
         int[] lightIndices = {holder.getLights().indexOf(closest), holder.getLights().indexOf(sndClosest)};
         return lightIndices;
-    }
+    } */
 
     private Mat4 createNormalMat(Mat4 modelMatrix) {
         return Mat4.inverse(modelMatrix).transpose();

@@ -1,27 +1,21 @@
 package engine.gameobjects.Light;
 
-import engine.gameobjects.GameObjectRoot;
-import engine.gameobjects.Model;
 import math.Mat4;
 import math.Vec3;
 
 public class Sun {
-    private GameObjectRoot gameObjectRoot;
     private Mat4 viewMatrix;
     private Mat4 projectionMatrix;
 
     private Vec3 color;
-    private Vec3 nightColor = new Vec3(0,0,1);
     private Vec3 originalColor;
-    private float range;
-    private Model model;
+    private Vec3 position;
 
-    public Sun(Vec3 color, float range) {
+    public Sun(Vec3 position, Vec3 color) {
         this.color = color;
+        this.position = position;
         originalColor = new Vec3(color);
-        this.range = range;
         projectionMatrix = Mat4.orthographic(10,-10,10,-10,-10,20);
-
     }
 
     public Vec3 getColor() {
@@ -32,26 +26,14 @@ public class Sun {
         this.color = color;
     }
 
-    public float getRange() {
-        return range;
-    }
-
-    public void setRange(float range) {
-        this.range = range;
-    }
-
     public void dayNightCycle(float dayTime, float dayTimeIncrease) {
-        gameObjectRoot.setPosition(new Vec3(0 + (float)Math.cos(Math.toRadians(dayTime)) * 5, 0 + (float)Math.sin(Math.toRadians(dayTime)) * 5, gameObjectRoot.getPosition().z));
+        position = new Vec3(0 + (float)Math.cos(Math.toRadians(dayTime)) * 5, 0 + (float)Math.sin(Math.toRadians(dayTime)) * 5, position.z);
 
         float fadeSpeed = dayTimeIncrease/5;
         if(dayTime>180) {
             if(color.x > 0) color.x -= fadeSpeed;
             if(color.y > 0) color.y -= fadeSpeed;
             if(color.z > 0) color.z -= fadeSpeed;
-            //if(color.x > nightColor.x) color.x -= fadeSpeed;
-            //if(color.y > nightColor.y) color.y -= fadeSpeed;
-            //if(color.z > nightColor.z) color.z -= fadeSpeed;
-
         } else {
             if(color.x <= 0) color.x = 0.01f;
             if(color.y <= 0) color.y = 0.01f;
@@ -62,12 +44,8 @@ public class Sun {
         }
     }
 
-    public Vec3 getPosition() {
-        return gameObjectRoot.getPosition();
-    }
-
     public Mat4 getViewMatrix() {
-        viewMatrix = Mat4.lookAt(gameObjectRoot.getPosition(), new Vec3(), new Vec3(0, 1, 0));
+        viewMatrix = Mat4.lookAt(position, new Vec3(), new Vec3(0, 1, 0));
         return viewMatrix;
     }
 
@@ -75,23 +53,7 @@ public class Sun {
         return projectionMatrix;
     }
 
-    public void setProjectionMatrix(Mat4 projectionMatrix) {
-        this.projectionMatrix = projectionMatrix;
-    }
-
-    public Model getModel() {
-        return model;
-    }
-
-    public void setModel(Model model) {
-        this.model = model;
-    }
-
-    public GameObjectRoot getGameObjectRoot() {
-        return gameObjectRoot;
-    }
-
-    public void setGameObjectRoot(GameObjectRoot gameObjectRoot) {
-        this.gameObjectRoot = gameObjectRoot;
+    public Vec3 getPosition() {
+        return position;
     }
 }

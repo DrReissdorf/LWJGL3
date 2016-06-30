@@ -1,17 +1,19 @@
 package engine.gameobjects;
 
+import engine.gameobjects.GameObjectRoot;
+import engine.gameobjects.GameObject;
 import math.Mat4;
 import math.Vec3;
 
-public class Camera extends GameObjectRoot {
+public class Camera extends GameObject {
     private Mat4 projectionMatrix;
     private long lastTime;
     private boolean isFreeFlight = true;
     private float moveSpeed;
     private final boolean printPosition = false;
 
-    public Camera(Vec3 position, float collisionRadius, float fov, int windowWidth, int windowHeight, float near, float far, float moveSpeed) {
-        super(position, collisionRadius);
+    public Camera(GameObjectRoot root, float fov, int windowWidth, int windowHeight, float near, float far, float moveSpeed) {
+        super(root);
         lastTime = System.currentTimeMillis();
         this.moveSpeed = moveSpeed;
         projectionMatrix = Mat4.perspective( fov, windowWidth, windowHeight, near, far );
@@ -26,13 +28,13 @@ public class Camera extends GameObjectRoot {
     }
 
     public Mat4 getViewMatrix() {
-        Vec3 position = getPosition();
-        Vec3 direction = getDirection();
-        Vec3 up = getUp();
+        Vec3 position = getRoot().getPosition();
+        Vec3 direction = getRoot().getDirection();
+        Vec3 up = getRoot().getUp();
 
         if(printPosition) {
             if((System.currentTimeMillis()-lastTime) > 1000) {
-                System.out.println("Main Camera: Position - x:"+position.x+" y:"+position.y+" z:"+position.z+"  Rotation - x:"+getRotX()+" y:"+getRotY());
+                System.out.println("Main Camera: Position - x:"+position.x+" y:"+position.y+" z:"+position.z+"  Rotation - x:"+getRoot().getRotX()+" y:"+getRoot().getRotY());
                 lastTime = System.currentTimeMillis();
             }
         }
@@ -43,13 +45,13 @@ public class Camera extends GameObjectRoot {
     }
 
     public void moveForward(float speed) {
-        if(isFreeFlight) super.moveViewDirection(speed);
-        else super.moveForward(speed);
+        if(isFreeFlight) getRoot().moveViewDirection(speed);
+        else moveForward(speed);
     }
 
     public void moveBackward(float speed) {
-        if(isFreeFlight) super.moveViewDirection(-speed);
-        else super.moveForward(-speed);
+        if(isFreeFlight) getRoot().moveViewDirection(-speed);
+        else moveForward(-speed);
     }
 
     public boolean isFreeFlight() {
@@ -57,10 +59,10 @@ public class Camera extends GameObjectRoot {
     }
 
     public void setFreeFlight(boolean freeFlight) {
-        Vec3 position = getPosition();
+        Vec3 position = getRoot().getPosition();
 
         isFreeFlight = freeFlight;
-        setPosition(new Vec3(position.x, 2f, position.z));
+        getRoot().setPosition(new Vec3(position.x, 2f, position.z));
         System.out.println("Main Camera: Set freeflight-mode to "+freeFlight);
     }
 }

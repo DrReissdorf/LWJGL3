@@ -11,7 +11,7 @@ public class StartMultiplayer {
     public static void main(String[] args) {
         Client client = ClientBuilder.createClient();
 
-        Player localPlayer = new Player("First", HolderSingleton.getInstance().getMainCamera().getPosition(),0,0,0);
+        Player localPlayer = new Player("First", HolderSingleton.getInstance().getMainCamera().getRoot().getPosition(),0,0,0);
         localPlayer.id = client.getID();
         NetworkingDataSingleton.getInstance().setLocalPlayer(localPlayer);
 

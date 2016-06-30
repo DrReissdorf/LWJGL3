@@ -57,13 +57,14 @@ public class Scene {
 	}
 
 	private void createMeshes() {
-		holder.addMesh(new ObjLoader().loadObj("Meshes/monkey.obj").get(0)); //0
-		holder.addMesh(new ObjLoader().loadObj("Meshes/dragon.obj").get(0)); //1
-		holder.addMesh(new ObjLoader().loadObj("Meshes/screen.obj").get(0)); //2
-		holder.addMesh(new ObjLoader().loadObj("Meshes/cam.obj").get(0)); //3
-		holder.addMesh(new ObjLoader().loadObj("Meshes/ground_plane.obj").get(0)); //4
-		holder.addMesh(new ObjLoader().loadObj("Meshes/monkey_scene.obj").get(0)); //5
-		holder.addMesh(new ObjLoader().loadObj("Meshes/cube.obj").get(0));//6
+		ObjLoader objLoader = new ObjLoader();
+		holder.addMesh(objLoader.loadObj("Meshes/monkey.obj").get(0)); //0
+		holder.addMesh(objLoader.loadObj("Meshes/dragon.obj").get(0)); //1
+		holder.addMesh(objLoader.loadObj("Meshes/screen.obj").get(0)); //2
+		holder.addMesh(objLoader.loadObj("Meshes/cam.obj").get(0)); //3
+		holder.addMesh(objLoader.loadObj("Meshes/ground_plane.obj").get(0)); //4
+		holder.addMesh(objLoader.loadObj("Meshes/monkey_scene.obj").get(0)); //5
+		holder.addMesh(objLoader.loadObj("Meshes/cube.obj").get(0));//6
 	}
 
 	private void createTextures() {

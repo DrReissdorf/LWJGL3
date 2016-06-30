@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 
 public class ObjLoader {
-    public ArrayList<Mesh> loadObj( String filename ) {
+    public static ArrayList<Mesh> loadObj( String filename ) {
         ArrayList<Mesh> meshes = new ArrayList<>();
         OBJContainer objContainer = OBJContainer.loadFile( filename );
         ArrayList<OBJGroup> objGroups    = objContainer.getGroups();

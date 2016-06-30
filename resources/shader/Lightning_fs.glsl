@@ -87,7 +87,7 @@ float shadows_PCF(in sampler2DShadow shadowmap, in vec4 shadowmapCoord, in float
     /******************************************/
 
     float shadowmap_factor = 0.0;
-    float numberOfSamples = 0;
+    int numberOfSamples = 0;
     for (float y = -forSamples ; y <= forSamples ; y++) {
         for (float x = -forSamples ; x <= forSamples ; x++) {
 

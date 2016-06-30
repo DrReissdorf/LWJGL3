@@ -184,10 +184,8 @@ public class Multiplayer {
     }
 
     private void winProcLoop() {
-        new Thread(new Runnable() {
-            public void run() {
-                renderLoop();
-            }
+        new Thread(() -> {
+            renderLoop();
         }).start();
 
         new Thread(() -> {

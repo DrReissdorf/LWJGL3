@@ -1,15 +1,11 @@
 package engine.start;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import engine.logic.Multiplayer;
 import engine.networking.client.ClientBuilder;
 import engine.networking.data.NetworkingDataSingleton;
 import engine.networking.entity.Player;
-import math.Vec3;
 import singleton.HolderSingleton;
-
-import java.io.IOException;
 
 public class StartMultiplayer {
     public static void main(String[] args) {

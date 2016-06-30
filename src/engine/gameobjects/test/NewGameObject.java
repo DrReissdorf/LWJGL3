@@ -1,5 +1,6 @@
-package engine.gameobjects;
+package engine.gameobjects.test;
 
+import engine.gameobjects.GameObjectRoot;
 import engine.gameobjects.Light.Light;
 import engine.gameobjects.Light.Sun;
 import math.Mat4;
@@ -11,21 +12,16 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static math.MathUtil.PI;
 
-public class GameObjectRoot {
+public class NewGameObject {
+    private NewGameObject parent;
+
     private Mat4 tranformationMatrix;
     private float scale;
     private Vec3 position, direction, right, forward, up;
     private float rotX=0, rotY=0, rotZ=0;
 
-    private Light light;
-    private Model model;
-    private Sun sun;
-
-    private float collisionRadius;
-
-    public GameObjectRoot(Vec3 position, float collisionRadius) {
+    public NewGameObject(Vec3 position, float collisionRadius) {
         this.position = position;
-        this.collisionRadius = collisionRadius;
         this.scale = 1;
         this.tranformationMatrix = Transformation.createTransformationMatrix(position,rotX,rotY,rotZ,scale);
         //this.tranformationMatrix = Transformation.createTransMat(new Mat4(), position, scale);
@@ -116,13 +112,6 @@ public class GameObjectRoot {
         Vec3 X = new Vec3(newPosition.x,position.y,position.z);
         Vec3 Z = new Vec3(position.x,position.y,newPosition.z);
 
-        if(!isColliding(X)) {
-            position.x = X.x;
-        }
-        if(!isColliding(Z)) {
-            position.z = Z.z;
-        }
-
         updateTranformationMatrix();
     }
 
@@ -130,7 +119,6 @@ public class GameObjectRoot {
         updateVectors();
 
         Vec3 newPosition = new Vec3(position.x+(direction.x*speed),position.y+(direction.y*speed),position.z+(direction.z*speed));
-        if(!isColliding(newPosition)) position = newPosition;
 
         updateTranformationMatrix();
     }
@@ -139,7 +127,6 @@ public class GameObjectRoot {
         updateVectors();
 
         Vec3 newPosition = new Vec3(position.x-(forward.x*speed),position.y-(forward.y*speed),position.z-(forward.z*speed));
-        if(!isColliding(newPosition)) position = newPosition;
 
         updateTranformationMatrix();
     }
@@ -148,7 +135,6 @@ public class GameObjectRoot {
         updateVectors();
 
         Vec3 newPosition = new Vec3(position.x+(right.x*speed),position.y,position.z+(right.z*speed));
-        if(!isColliding(newPosition)) position = newPosition;
 
         updateTranformationMatrix();
     }
@@ -157,7 +143,6 @@ public class GameObjectRoot {
         updateVectors();
 
         Vec3 newPosition = new Vec3(position.x-(right.x*speed),position.y,position.z-(right.z*speed));
-        if(!isColliding(newPosition)) position = newPosition;
 
         updateTranformationMatrix();
     }
@@ -197,7 +182,6 @@ public class GameObjectRoot {
     }
 
     public void addRotations(float rotX, float rotY) {
-
         updateVectors();
         this.rotX -= rotX;
         this.rotY += rotY;
@@ -214,59 +198,5 @@ public class GameObjectRoot {
 
     public float getRotY() {
         return rotY;
-    }
-
-    public Model getModel() {
-        return model;
-    }
-
-    public void setModel(Model model) {
-        this.model = model;
-        this.scale = model.getScale();
-        updateTranformationMatrix();
-    }
-
-    private boolean isColliding(Vec3 position) {
-        for(GameObjectRoot gameObjectRoot : HolderSingleton.getInstance().getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),position)) < gameObjectRoot.getCollisionRadius()+collisionRadius) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isColli(Vec3 position) {
-        Vec3 objectPos;
-
-        for(GameObjectRoot gameObjectRoot : HolderSingleton.getInstance().getGameObjectRoots()) {
-            objectPos = new Vec3(gameObjectRoot.getPosition());
-
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),position)) < gameObjectRoot.getCollisionRadius()+collisionRadius) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public Light getLight() {
-        return light;
-    }
-
-    public void setLight(Light light) {
-        this.light = light;
-    }
-
-    public Sun getSun() {
-        return sun;
-    }
-
-    public void setSun(Sun sun) {
-        this.sun = sun;
-    }
-
-    public float getCollisionRadius() {
-        return collisionRadius;
     }
 }

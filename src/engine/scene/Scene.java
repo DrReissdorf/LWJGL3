@@ -122,7 +122,7 @@ public class Scene {
 
 
 		/* SUN */
-		Sun sun = new Sun(new Vec3(0,3,-3), new Vec3(1f,1f,1f));
+		Sun sun = new Sun(new Vec3(0,3,-3), new Vec3(2f,2f,2f));
 		holder.setSun(sun);
 
 		/* LIGHT GAMEOBJECTS */

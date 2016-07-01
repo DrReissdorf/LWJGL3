@@ -82,7 +82,7 @@ public class Renderer {
         renderGeometry();
         renderShadowMap();
         renderLightning(dayTime, backgroundColor);
-        //blurBloom();
+        blurBloom();
         postProcessing();
 
     }
@@ -92,7 +92,7 @@ public class Renderer {
         glBindFramebuffer( GL_FRAMEBUFFER, shadowFrameBuffer);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        glCullFace(GL_FRONT);
+        glCullFace(GL_FRONT); //fix peter-panning
 
         Camera mainCamera = holder.getMainCamera();
         Sun sun = holder.getSun();
@@ -100,13 +100,6 @@ public class Renderer {
         shadowShader.useProgram();
 
         Mat4 mv = Mat4.mul(sun.getProjectionMatrix(), sun.getViewMatrix());
-
-    /*    for (GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition()))<renderDistance && gameObjectRoot.getModel()!=null && gameObjectRoot.getLight()==null && gameObjectRoot.getSun()==null) {
-                shadowShader.setUniform("uProjectionViewModel", Mat4.mul(mv,gameObjectRoot.getTranformationMatrix()));
-                gameObjectRoot.getModel().getMesh().draw(GL_TRIANGLES);
-            }
-        } */
 
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
             for(Model modelTest : gameObjectRoot.getAllModels()) {
@@ -129,40 +122,6 @@ public class Renderer {
 
         geometryShader.useProgram();
         geometryShader.setUniform("uProjectionView", Mat4.mul(mainCamera.getProjectionMatrix(), mainCamera.getViewMatrix()));
-
-    /*    for(GameObjectRoot gameObjectRoot : holder.getGameObjectRoots()) {
-            if(Vec3.length(Vec3.sub(gameObjectRoot.getPosition(),mainCamera.getPosition())) < renderDistance && gameObjectRoot.getModel()!=null) {
-                geometryShader.setUniform("uModel",     gameObjectRoot.getTranformationMatrix());
-                geometryShader.setUniform("uNormalMat", createNormalMat(gameObjectRoot.getTranformationMatrix()));
-
-                Model model = gameObjectRoot.getModel();
-
-                if(gameObjectRoot.getSun() != null) {
-                    geometryShader.setUniform("uIsLight", 1);
-                    geometryShader.setUniform("uLightColor", gameObjectRoot.getSun().getColor());
-                } else if(gameObjectRoot.getLight() != null) {
-                    geometryShader.setUniform("uIsLight", 1);
-                    geometryShader.setUniform("uLightColor", gameObjectRoot.getLight().getColor());
-                } else {
-                    if(model.getModelTexture() != null) {
-                        geometryShader.setUniform("uIsLight", 0);
-                        geometryShader.setUniform("uHasTexture", 1.0f);
-                        geometryShader.setUniform("uTexture",       model.getModelTexture().getTexture());
-                        geometryShader.setUniform("uShininess",     model.getModelTexture().getShininess());
-                        geometryShader.setUniform("uReflectivity",  model.getModelTexture().getReflectivity());
-                        geometryShader.setUniform("uTextureScale",  model.getTextureScale());
-                    } else {
-                        geometryShader.setUniform("uIsLight", 0);
-                        geometryShader.setUniform("uHasTexture", 0.0f);
-                        geometryShader.setUniform("uShininess", 100.0f);
-                        geometryShader.setUniform("uReflectivity", 0.5f);
-                    }
-                }
-
-                model.getMesh().draw(GL_TRIANGLES);
-            }
-
-        } */
 
         for(GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
             for(Model modelTest : gameObjectRoot.getAllModels()) {
@@ -195,11 +154,11 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
-        ArrayList<Light> lightTests = new ArrayList<>();
+        ArrayList<Light> lights = new ArrayList<>();
         for (GameObjectRoot gameObjectRoot : holder.getGameObjectRootTests()) {
             for (Light lightTest : gameObjectRoot.getAllLights()) {
                 if (Vec3.length(Vec3.sub(gameObjectRoot.getPosition(), lightTest.getPosition())) < renderDistance) {
-                    lightTests.add(lightTest);
+                    lights.add(lightTest);
                 }
             }
         }
@@ -218,11 +177,9 @@ public class Renderer {
         lightningShader.setUniform("uColorSpecTex", gBufferColorSpecTex);
         lightningShader.setUniform("uSpecTex", gBufferSpecTex);
 
-        //lightningShader.setUniform("uLights",lights);
-        lightningShader.setUniform("uLights",lightTests,true);
+        lightningShader.setUniform("uLights",lights,true);
 
-        Sun sun = holder.getSun();
-        lightningShader.setUniform("uSun",sun);
+        lightningShader.setUniform("uSun", holder.getSun());
         lightningShader.setUniform("uShadowmap", shadowMapTexture);
 
         screenQuad.draw();

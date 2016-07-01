@@ -4,9 +4,15 @@
  */
 package engine.logic;
 
+import com.esotericsoftware.kryonet.Client;
+import engine.networking.data.NetworkingDataSingleton;
 import engine.scene.Scene;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.macosx.ObjCRuntime;
@@ -15,14 +21,15 @@ import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.JNI.invokePPP;
-import static org.lwjgl.system.JNI.invokePPV;
-import static org.lwjgl.system.JNI.invokePPZ;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.macosx.ObjCRuntime.sel_getUid;
 
-public class Singleplayer {
+public class Multiplayer_MULTITASK_EXAMPLE {
+    private Client client;
+    private NetworkingDataSingleton networkingDataSingleton;
+
     private Scene scene;
     private InputHandler inputHandler;
     private GLFWErrorCallback errorCallback;
@@ -33,16 +40,24 @@ public class Singleplayer {
     public static long window;
     public static int WIDTH = 1280;
     public static int HEIGHT = 720;
+    private Object lock = new Object();
+    private boolean destroyed;
 
-    public void start() {
+    public Multiplayer_MULTITASK_EXAMPLE(Client client) {
+        this.client = client;
+        networkingDataSingleton = NetworkingDataSingleton.getInstance();
+    }
+
+    public void run() {
         System.setProperty("org.lwjgl.librarypath", new File("frameworks/lwjgl3/native").getAbsolutePath());
-
         try {
             init();
-            renderLoop();
+            winProcLoop();
 
-            glfwDestroyWindow(window);
-
+            synchronized (lock) {
+                destroyed = true;
+                glfwDestroyWindow(window);
+            }
             if (debugProc != null)
                 debugProc.free();
             keyCallback.free();
@@ -107,6 +122,7 @@ public class Singleplayer {
 
     private void renderLoop() {
         glfwMakeContextCurrent(window);
+
         GL.createCapabilities();
 
         glfwSwapInterval(0); //disable vsync
@@ -122,7 +138,7 @@ public class Singleplayer {
         int fps = 0;
         long tempTime;
 
-        while (!glfwWindowShouldClose(window)) {
+        while (!destroyed) {
             long time = System.nanoTime();
             deltaTime = (float)(time - lastNanoTime) * 1e-9f;
             lastNanoTime  = time;
@@ -130,7 +146,7 @@ public class Singleplayer {
             inputHandler.updateInput(deltaTime);
             scene.update(deltaTime);
             scene.render(deltaTime);
-            limitFps(70);
+            limitFps(30);
 
             fps++;
             tempTime = time-lastFpsNanoTime;
@@ -140,9 +156,25 @@ public class Singleplayer {
                 fps = 0;
             }
 
-            glfwSwapBuffers(window);
-            glfwPollEvents();
+            synchronized (lock) {
+                if (!destroyed) {
+                    glfwSwapBuffers(window);
+                }
+            }
         }
+    }
+
+    private void winProcLoop() {
+        new Thread(() -> {
+            renderLoop();
+        }).start();
+
+        while (!glfwWindowShouldClose(window)) {
+            glfwWaitEvents();
+        }
+
+        System.out.println("Shutting down...");
+        System.exit(-1);
     }
 
     private long variableYieldTimeFPS, lastTimeFPS;

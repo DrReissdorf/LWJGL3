@@ -46,12 +46,12 @@ public class Camera extends GameObject {
 
     public void moveForward(float speed) {
         if(isFreeFlight) getRoot().moveViewDirection(speed);
-        else moveForward(speed);
+        else getRoot().moveForward(speed);
     }
 
     public void moveBackward(float speed) {
         if(isFreeFlight) getRoot().moveViewDirection(-speed);
-        else moveForward(-speed);
+        else getRoot().moveForward(-speed);
     }
 
     public boolean isFreeFlight() {

@@ -1,7 +1,5 @@
 package engine.gameobjects;
 
-import engine.gameobjects.GameObjectRoot;
-
 public class GameObject {
     private GameObjectRoot root;
 

@@ -99,8 +99,6 @@ public class InputHandler {
         lastFrameMouseX = (float) b1.get(0);
         lastFrameMouseY = (float) b2.get(0);
 
-        System.out.println(deltaX + " " + deltaY);
-
         if(mainCamera.getRoot().getRotY()-(deltaY*rotationScale)>=-1.5f && mainCamera.getRoot().getRotY()-(deltaY*rotationScale)<=1.5f) mainCamera.getRoot().addRotY(-deltaY*rotationScale);
         mainCamera.getRoot().addRotX(deltaX*rotationScale);
     }

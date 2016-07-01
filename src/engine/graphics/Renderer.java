@@ -207,10 +207,13 @@ public class Renderer {
 
             blurShader.setUniform("uHorizontal", textureIndex);
 
-            if(first_iteration) blurShader.setUniform("uTexture", brightObjectsTexture);
+            if(first_iteration) {
+                blurShader.setUniform("uTexture", brightObjectsTexture);
+                first_iteration = false;
+            }
             else blurShader.setUniform("uTexture", pingPongTextures[textureIndex]);
+
             screenQuad.draw();
-            if (first_iteration) first_iteration = false;
         }
     }
 

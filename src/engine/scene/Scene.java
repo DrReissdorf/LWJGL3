@@ -114,11 +114,10 @@ public class Scene {
 			for (int z=-value; z<=value; z++) {
 				float multi = 15.7f;
 				GameObjectRoot plane = new GameObjectRoot(new Vec3(x*multi,0,z*multi));
-				new Model(plane,holder.getMesh(4), holder.getModelTexture(1), 5, 1);
+				new Model(plane,holder.getMesh(4), null, 5, 1); //holder.getModelTexture(1)
 				holder.getGameObjectRootTests().add(plane);
 			}
 		}
-
 
 
 		/* SUN */

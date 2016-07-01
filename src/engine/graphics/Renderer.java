@@ -116,7 +116,7 @@ public class Renderer {
     public void renderGeometry() {
         glBindFramebuffer(GL_FRAMEBUFFER, gBufferID);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glCullFace(GL_BACK);
+        glViewport(0, 0, Singleplayer.WIDTH, Singleplayer.HEIGHT);
 
         Camera mainCamera = holder.getMainCamera();
 
